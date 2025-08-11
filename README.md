@@ -58,7 +58,79 @@ LangFlow is a cutting-edge cybersecurity automation platform that combines the p
 - **Workflow-Specific Metrics**: Filtered analytics per workflow
 - **Historical Trends**: 7-day activity tracking
 
+#### 📄 **AI-Powered Report Generation**
+- **ChatGPT Integration**: Intelligent analysis and summarization
+- **Professional PDF Reports**: Enterprise-ready documentation
+- **Markdown Processing**: Rich formatting from AI responses
+- **Executive Summaries**: Business-appropriate reporting
+- **Risk Assessment**: Automated security posture evaluation
+- **Multiple Report Formats**: PDF download with comprehensive analysis
+
 ---
+
+## 🔄 **Complete Workflow Execution Diagram**
+
+```mermaid
+graph TB
+    A["🚀 LangFlow Platform"] --> B["📝 Workflow Creation"]
+    A --> C["📊 Execution & Monitoring"] 
+    A --> D["📄 Report Generation"]
+    A --> E["🖥️ Terminal Operations"]
+    
+    B --> B1["🛠️ WorkflowForm"]
+    B --> B2["🎨 Visual Builder"]
+    B1 --> B3["⚡ Command Steps"]
+    B1 --> B4["🤖 AI Steps"]
+    B1 --> B5["📧 Report Steps"]
+    B3 --> B6["📥 Input Variables"]
+    B4 --> B6
+    B5 --> B6
+    
+    C --> C1["🏃 Workflow Engine"]
+    C1 --> C2["⚡ Command Execution"]
+    C1 --> C3["🤖 AI Processing"]
+    C1 --> C4["📧 Multi-channel Delivery"]
+    C2 --> C5["📊 Real-time Updates"]
+    C3 --> C5
+    C4 --> C5
+    
+    D --> D1["📄 AI Report Generator"]
+    D1 --> D2["🤖 ChatGPT Analysis"]
+    D2 --> D3["📝 Markdown Processing"]
+    D3 --> D4["📊 Professional PDF"]
+    D4 --> D5["📥 Download Management"]
+    
+    E --> E1["🖥️ Interactive Terminal"]
+    E1 --> E2["🔄 Xterm Integration"]
+    E2 --> E3["📊 Command History"]
+    E3 --> E4["🔍 Full-screen UI"]
+    
+    B6 --> C1
+    C5 --> D1
+    E4 --> C1
+    
+    style A fill:#0f1325,stroke:#22d3ee,color:#fff
+    style B fill:#ec4899,stroke:#ec4899,color:#fff
+    style C fill:#10b981,stroke:#10b981,color:#fff
+    style D fill:#f59e0b,stroke:#f59e0b,color:#fff
+    style E fill:#8b5cf6,stroke:#8b5cf6,color:#fff
+```
+
+### 🔄 **Simplified Process Flow**
+
+```mermaid
+flowchart LR
+    A[📝 Create Workflow] --> B[⚡ Execute Steps]
+    B --> C[📊 Monitor Progress]
+    C --> D[📄 Generate Report]
+    D --> E[📥 Download PDF]
+    
+    style A fill:#ec4899,stroke:#ec4899,color:#fff
+    style B fill:#10b981,stroke:#10b981,color:#fff
+    style C fill:#06b6d4,stroke:#06b6d4,color:#fff
+    style D fill:#f59e0b,stroke:#f59e0b,color:#fff
+    style E fill:#8b5cf6,stroke:#8b5cf6,color:#fff
+```
 
 ## 🏗️ **Architecture**
 
@@ -76,6 +148,7 @@ LangFlow is a cutting-edge cybersecurity automation platform that combines the p
 - **OpenAI API** integration with multiple model support
 - **WebSocket** support for real-time communication
 - **Pydantic** for robust data validation
+- **ReportLab** for professional PDF generation
 
 ### **Key Libraries & Tools**
 - **Drag & Drop**: `@hello-pangea/dnd` for workflow reordering
@@ -83,6 +156,8 @@ LangFlow is a cutting-edge cybersecurity automation platform that combines the p
 - **HTTP Client**: `httpx` for async API calls
 - **Email**: Built-in SMTP support with TLS
 - **Security**: Environment-based configuration
+- **PDF Generation**: `reportlab` for enterprise-ready reports
+- **Terminal Enhancement**: `@xterm/addon-fit` for responsive terminal
 
 ---
 
@@ -113,6 +188,9 @@ LangFlow is a cutting-edge cybersecurity automation platform that combines the p
    python -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
+   
+   # Additional dependencies for PDF reports
+   pip install reportlab>=4.0.0
    ```
 
 3. **Start API Server**
@@ -137,6 +215,42 @@ npm run dev
 ```
 
 🌐 **Access the app**: http://localhost:5173
+
+---
+
+## 🖼️ **Screenshots & Demo**
+
+### **🎬 Platform Overview**
+- 🚀 **Dashboard**: Cyberpunk-themed interface with real-time statistics
+- 🛠️ **Workflow Builder**: Visual drag-and-drop workflow creation
+- 📊 **Execution Monitor**: Live progress tracking with WebSocket updates
+- 🖥️ **Interactive Terminal**: Full-featured web terminal with command history
+- 📄 **AI Reports**: Professional PDF generation with ChatGPT analysis
+
+### **🔗 Live Demo**
+> 🚧 **Coming Soon**: Interactive demo environment with sample workflows
+
+### **📸 Feature Gallery**
+```
+┌─ 🎨 Cyberpunk UI ─────────────────────────────────────┐
+│ • Dark theme with neon accent colors                  │
+│ • Responsive design for all screen sizes              │
+│ • Smooth animations and glowing effects               │
+└────────────────────────────────────────────────────────┘
+
+┌─ 🤖 AI Integration ────────────────────────────────────┐
+│ • ChatGPT-4o powered analysis and decision making     │
+│ • Dynamic prompt templating with variables            │
+│ • Intelligent report generation and summarization     │
+└────────────────────────────────────────────────────────┘
+
+┌─ 📊 Professional Reports ──────────────────────────────┐
+│ • Executive summaries with risk assessment            │
+│ • Technical analysis with step-by-step breakdown      │
+│ • Markdown formatting converted to PDF styling        │
+│ • Enterprise-ready documentation standards            │
+└────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -199,6 +313,18 @@ Channels:
 3. **Interactive Terminal**: Access web TTY for manual commands
 4. **View Results**: Check execution history and reports
 
+### **4. Generate AI-Powered Reports**
+
+1. **Access Run History**: Navigate to workflow details → "Show History"
+2. **Select Run**: Choose the execution you want to analyze
+3. **Generate Report**: Click "Generate PDF Report" for AI analysis
+4. **Download Results**: Professional PDF with:
+   - 🤖 **AI Executive Summary**: ChatGPT-powered analysis
+   - 📊 **Technical Details**: Complete step-by-step breakdown
+   - ⚠️ **Risk Assessment**: Automated security evaluation
+   - 💡 **Recommendations**: Actionable security improvements
+   - 📋 **Formal Documentation**: Enterprise-ready formatting
+
 ---
 
 ## 📁 **Project Structure**
@@ -226,17 +352,20 @@ lang-flow/
 │   │   ├── 📁 routers/          # API route handlers
 │   │   │   ├── workflows.py        # Workflow CRUD operations
 │   │   │   ├── runs.py            # Execution & WebSocket endpoints
-│   │   │   └── terminal.py        # Interactive terminal WebSocket
+│   │   │   ├── terminal.py        # Interactive terminal WebSocket
+│   │   │   └── reports.py         # PDF report generation endpoints
 │   │   └── 📁 services/         # Business logic
 │   │       ├── workflow_engine.py  # Core execution engine
 │   │       ├── ai.py              # AI model integration
 │   │       ├── command_executor.py # Shell command execution
 │   │       ├── report_service.py   # Multi-channel reporting
+│   │       ├── report_generator.py # AI-powered PDF generation
 │   │       ├── storage.py         # Data persistence
 │   │       └── realtime.py        # WebSocket management
 │   ├── 📁 data/                 # Data storage
 │   │   ├── workflows.json          # Workflow definitions
 │   │   ├── 📁 runs/               # Execution results
+│   │   ├── 📁 reports/            # Generated PDF reports
 │   │   └── 📁 samples/            # Example workflows
 │   └── requirements.txt
 ├── 📁 assets/                   # Project assets
@@ -269,6 +398,7 @@ CORS_ORIGINS=http://localhost:5173
 PORT=8000
 RUNS_DIR=data/runs
 WORKFLOWS_FILE=data/workflows.json
+REPORTS_DIR=data/reports
 DEFAULT_MODEL_PROVIDER=openai
 DEFAULT_MODEL_NAME=gpt-4o-mini
 ```
@@ -342,9 +472,37 @@ Automatically render CSV outputs as formatted tables:
 nmap -oG - {target} | grep "open" | awk '{print $2","$4}'
 ```
 
+### **AI-Powered Report Features**
+Generate professional security reports with ChatGPT analysis:
+```yaml
+# Automatic features in generated reports:
+- Executive Summary: Business-level overview
+- Risk Assessment: HIGH/MEDIUM/LOW classification
+- Key Findings: AI-identified critical issues
+- Technical Analysis: Step-by-step breakdown
+- Recommendations: Actionable security improvements
+- Formal English: Enterprise-ready documentation
+
+# Supported markdown formatting in reports:
+- **Bold text** for emphasis
+- *Italic text* for highlights
+- `Code snippets` in monospace
+- # Headers for structure
+- • Bullet lists for findings
+- Professional PDF layout
+```
+
 ---
 
 ## 🚧 **Roadmap**
+
+### **✅ Recently Completed**
+- [x] **AI-Powered Report Generation**: ChatGPT integration for professional PDF reports
+- [x] **Markdown Processing**: Rich formatting support for AI-generated content
+- [x] **Enhanced Terminal UI**: Full-featured web terminal with command history
+- [x] **Input Variable Management**: Dynamic variable support for all step types
+- [x] **Visual Workflow Details**: Read-only workflow visualization with graph display
+- [x] **Run History & Analytics**: Comprehensive execution tracking and reporting
 
 ### **🔄 Current Development**
 - [ ] **Multi-User Support**: User authentication and role-based access
@@ -391,6 +549,90 @@ We welcome contributions! Here's how to get started:
 ## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📚 **API Documentation**
+
+### **Report Generation Endpoints**
+
+#### **Generate Report**
+```http
+POST /api/reports/generate/{run_id}
+```
+Generate AI-powered PDF report for a specific workflow run.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Report generated successfully",
+  "report_id": "run_123_20241212_143022",
+  "filename": "report_run_123_20241212_143022.pdf",
+  "download_url": "/api/reports/download/report_run_123_20241212_143022.pdf"
+}
+```
+
+#### **Download Report**
+```http
+GET /api/reports/download/{filename}
+```
+Download generated PDF report.
+
+#### **Check Report Status**
+```http
+GET /api/reports/status/{run_id}
+```
+Check if reports exist for a specific run.
+
+**Response:**
+```json
+{
+  "has_report": true,
+  "reports": [
+    {
+      "filename": "report_run_123_20241212_143022.pdf",
+      "size": 1024000,
+      "created": "2024-12-12T14:30:22",
+      "download_url": "/api/reports/download/report_run_123_20241212_143022.pdf"
+    }
+  ]
+}
+```
+
+#### **List All Reports**
+```http
+GET /api/reports/list
+```
+Get all available reports with metadata.
+
+---
+
+## 📋 **Changelog**
+
+### **🆕 Version 2.0.0 - AI-Powered Reports** *(Latest)*
+- ✨ **NEW**: AI-powered PDF report generation with ChatGPT analysis
+- ✨ **NEW**: Professional markdown processing for rich formatting
+- ✨ **NEW**: Executive summaries with risk assessment and recommendations
+- 🔧 **IMPROVED**: Enhanced terminal UI with command history and quick commands
+- 🔧 **IMPROVED**: Visual workflow details with interactive graph display
+- 🔧 **IMPROVED**: Comprehensive run history with detailed analytics
+- 📦 **ADDED**: Input variable management for all step types
+- 📦 **ADDED**: Real-time report generation status tracking
+- 🐛 **FIXED**: DateTime serialization issues in report generation
+- 🐛 **FIXED**: Markdown formatting compatibility with PDF output
+
+### **Version 1.5.0 - Enhanced UX**
+- 🔧 **IMPROVED**: Cyberpunk theme with better visual hierarchy
+- 📦 **ADDED**: Drag-and-drop workflow builder
+- 📦 **ADDED**: Real-time execution monitoring
+- 🐛 **FIXED**: WebSocket connection stability
+
+### **Version 1.0.0 - Initial Release**
+- 🚀 **LAUNCH**: Core workflow automation platform
+- 📦 **ADDED**: AI, Command, and Report step types
+- 📦 **ADDED**: Multi-channel reporting (Email, Telegram, Slack)
+- 📦 **ADDED**: Interactive web terminal
 
 ---
 

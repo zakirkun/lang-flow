@@ -69,4 +69,49 @@ export async function listRuns(): Promise<RunResult[]> {
 export function runsWsUrl(runId: string): string {
   const base = window.location.origin.replace('http', 'ws')
   return `${base}/api/runs/ws/${runId}`
+}
+
+// Report generation APIs
+export async function generateReport(runId: string): Promise<{ status: string; message: string; report_id: string; filename: string; download_url: string }> {
+  const res = await fetch(`${BASE}/api/reports/generate/${runId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  if (!res.ok) throw new Error('Failed to generate report')
+  return res.json()
+}
+
+export async function getReportStatus(runId: string): Promise<{ has_report: boolean; reports: any[] }> {
+  const res = await fetch(`${BASE}/api/reports/status/${runId}`)
+  if (!res.ok) throw new Error('Failed to get report status')
+  return res.json()
+}
+
+export async function listReports(): Promise<{ reports: any[] }> {
+  const res = await fetch(`${BASE}/api/reports/list`)
+  if (!res.ok) throw new Error('Failed to list reports')
+  return res.json()
+}
+
+export async function downloadReport(filename: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/reports/download/${filename}`)
+  if (!res.ok) throw new Error('Failed to download report')
+  
+  const blob = await res.blob()
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.style.display = 'none'
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+}
+
+export async function deleteReport(filename: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/reports/delete/${filename}`, {
+    method: 'DELETE'
+  })
+  if (!res.ok) throw new Error('Failed to delete report')
 } 

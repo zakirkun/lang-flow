@@ -50,12 +50,17 @@ export default function WorkflowBuilder({ value, onChange }: Props) {
     onChange({ ...value, steps: sortedSteps, graph: { nodes, edges } })
   }, [order, value, nodes, edges, onChange])
 
-  function addNode(kind: 'ai' | 'command') {
+  function addNode(kind: 'ai' | 'command' | 'report') {
     const id = crypto.randomUUID()
-    const name = kind === 'ai' ? 'AI Step' : 'Command Step'
+    const name = kind === 'ai' ? 'AI Step' : kind === 'command' ? 'Command Step' : 'Report Step'
     const step: PentestStep = {
-      id, name, type: kind, timeout_seconds: 90, inputs: {},
+      id, 
+      name, 
+      type: kind, 
+      timeout_seconds: kind === 'ai' ? 90 : kind === 'command' ? 120 : 30, 
+      inputs: {},
       ...(kind === 'ai' ? { model: { provider: 'openai', model: 'gpt-4o-mini' } } : {}),
+      ...(kind === 'report' ? { report_config: { channels: [], template: '', subject: '' } } : {}),
     }
     onChange({ ...value, steps: [...value.steps, step], graph: { nodes: [...nodes, { id, position: { x: 80, y: 80 }, data: { label: name, kind }, type: 'card' }], edges } })
   }
@@ -67,6 +72,7 @@ export default function WorkflowBuilder({ value, onChange }: Props) {
         <div className="ml-auto flex gap-2">
           <button className="px-2 py-1 text-sm rounded border border-slate-700 bg-cyber-panel/60 text-cyber-neonGreen hover:shadow-neonGreen" onClick={() => addNode('ai')}>+ AI Node</button>
           <button className="px-2 py-1 text-sm rounded border border-slate-700 bg-cyber-panel/60 text-cyber-neonPink hover:shadow-neonPink" onClick={() => addNode('command')}>+ Command Node</button>
+          <button className="px-2 py-1 text-sm rounded border border-slate-700 bg-cyber-panel/60 text-cyber-neonYellow hover:shadow-neonYellow" onClick={() => addNode('report')}>+ Report Node</button>
         </div>
       </div>
       <div className="h-96 border border-slate-800 rounded bg-cyber-panel/20" style={{ background: 'linear-gradient(135deg, #0f1325 0%, #1e293b 100%)' }}>

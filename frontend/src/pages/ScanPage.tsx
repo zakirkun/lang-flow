@@ -127,12 +127,12 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
           <h2 className="text-2xl font-bold text-cyber-neonCyan">Security Scan Monitor</h2>
         </div>
         <div className="flex gap-2">
-          <button 
+          {/* <button 
             className="px-4 py-2 rounded border border-slate-700 bg-cyber-panel/60 text-gray-200 hover:text-white hover:shadow-neonCyan transition-all"
             onClick={() => setHistoryOpen(true)}
           >
             📊 History
-          </button>
+          </button> */}
           {!isRunning ? (
             <button 
               className="px-4 py-2 rounded border border-green-800 bg-green-900/30 text-cyber-neonGreen hover:shadow-neonGreen transition-all disabled:opacity-50"

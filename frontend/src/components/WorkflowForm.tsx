@@ -23,23 +23,31 @@ const WORKFLOW_TEMPLATES = [
         type: 'command' as const,
         command: 'assetfinder --subs-only {target}',
         timeout_seconds: 120,
-        inputs: {}
+        inputs: {
+          target: 'example.com'
+        }
       },
       {
         id: crypto.randomUUID(),
         name: 'Port Scan',
         type: 'command' as const,
-        command: 'nmap -T4 -p- {target}',
+        command: 'nmap -T4 -p{ports} {target}',
         timeout_seconds: 300,
-        inputs: {}
+        inputs: {
+          target: 'example.com',
+          ports: '80,443,8080,8443'
+        }
       },
       {
         id: crypto.randomUUID(),
         name: 'Vulnerability Summary',
         type: 'ai' as const,
-        prompt: 'Analyze the scan results and provide a security assessment summary for {target}',
+        prompt: 'Analyze the scan results and provide a security assessment summary for {target}. Focus on {focus_area} vulnerabilities.',
         timeout_seconds: 60,
-        inputs: {},
+        inputs: {
+          target: 'example.com',
+          focus_area: 'high and critical'
+        },
         model: { provider: 'openai' as const, model: 'gpt-4o-mini' }
       },
       {
@@ -187,6 +195,17 @@ export default function WorkflowForm({ initial, onSave }: Props) {
       }
       if (step.type === 'report' && (!step.report_config?.channels || step.report_config.channels.length === 0)) {
         newErrors[`step-${step.id}-channels`] = 'At least one report channel is required'
+      }
+      
+      // Validate inputs
+      if (step.inputs) {
+        Object.entries(step.inputs).forEach(([key, value]) => {
+          if (!key.trim()) {
+            newErrors[`step-${step.id}-input-empty-key`] = 'Input variable names cannot be empty'
+          } else if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) {
+            newErrors[`step-${step.id}-input-invalid-key`] = 'Input variable names must be valid identifiers (letters, numbers, underscore)'
+          }
+        })
       }
     })
 
@@ -368,7 +387,37 @@ export default function WorkflowForm({ initial, onSave }: Props) {
 
     setSaving(true)
     try {
-      await onSave(workflow)
+      // Generate default graph if not exists
+      let workflowToSave = { ...workflow }
+      if (!workflowToSave.graph && workflowToSave.steps.length > 0) {
+        const generatedNodes = workflowToSave.steps.map((step, index) => ({
+          id: step.id,
+          position: { x: index * 200, y: 100 },
+          data: { 
+            label: step.name, 
+            kind: step.type 
+          },
+          type: 'card'
+        }))
+
+        const generatedEdges = []
+        for (let i = 0; i < workflowToSave.steps.length - 1; i++) {
+          generatedEdges.push({
+            id: `edge-${i}`,
+            source: workflowToSave.steps[i].id,
+            target: workflowToSave.steps[i + 1].id,
+            animated: true,
+            style: { stroke: '#22d3ee', strokeWidth: 2 }
+          })
+        }
+
+        workflowToSave.graph = {
+          nodes: generatedNodes,
+          edges: generatedEdges
+        }
+      }
+      
+      await onSave(workflowToSave)
     } catch (error) {
       console.error('Failed to save workflow:', error)
     } finally {
@@ -696,6 +745,83 @@ export default function WorkflowForm({ initial, onSave }: Props) {
                                     </p>
                                   </div>
 
+                                  {/* Input Variables Section */}
+                                  <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <label className="block text-sm font-medium text-gray-300">
+                                        Input Variables
+                                      </label>
+                                      <button
+                                        type="button"
+                                        className="px-2 py-1 text-xs rounded border border-cyber-neonGreen bg-cyber-neonGreen/20 text-cyber-neonGreen hover:shadow-neonGreen"
+                                        onClick={() => {
+                                          const newInputs = { ...(step.inputs || {}), '': '' }
+                                          updateStep(step.id, { inputs: newInputs })
+                                        }}
+                                      >
+                                        + Add Input
+                                      </button>
+                                    </div>
+                                    
+                                    {Object.entries(step.inputs || {}).length === 0 ? (
+                                      <div className="border border-slate-700 bg-cyber-panel/30 rounded px-3 py-2 text-gray-400 text-sm text-center">
+                                        No input variables. Click "Add Input" to add.
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-2 border border-slate-700 bg-cyber-panel/30 rounded p-3">
+                                        {Object.entries(step.inputs || {}).map(([key, value], index) => (
+                                          <div key={index} className="flex gap-2 items-center">
+                                            <input
+                                              className={`flex-1 border rounded px-2 py-1 text-gray-100 text-sm ${
+                                                errors[`step-${step.id}-input-empty-key`] || errors[`step-${step.id}-input-invalid-key`] 
+                                                  ? 'border-red-500 bg-red-900/30' 
+                                                  : 'border-slate-600 bg-cyber-panel/60'
+                                              }`}
+                                              value={key}
+                                              onChange={(e) => {
+                                                const newInputs = { ...(step.inputs || {}) }
+                                                delete newInputs[key]
+                                                newInputs[e.target.value] = value
+                                                updateStep(step.id, { inputs: newInputs })
+                                              }}
+                                              placeholder="variable_name"
+                                            />
+                                            <span className="text-gray-400">=</span>
+                                            <input
+                                              className="flex-1 border border-slate-600 bg-cyber-panel/60 rounded px-2 py-1 text-gray-100 text-sm"
+                                              value={value as string}
+                                              onChange={(e) => {
+                                                const newInputs = { ...(step.inputs || {}) }
+                                                newInputs[key] = e.target.value
+                                                updateStep(step.id, { inputs: newInputs })
+                                              }}
+                                              placeholder="default_value"
+                                            />
+                                            <button
+                                              type="button"
+                                              className="px-2 py-1 text-xs rounded border border-red-700 bg-red-900/30 text-red-400 hover:shadow-red-400/50"
+                                              onClick={() => {
+                                                const newInputs = { ...(step.inputs || {}) }
+                                                delete newInputs[key]
+                                                updateStep(step.id, { inputs: newInputs })
+                                              }}
+                                            >
+                                              ×
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {(errors[`step-${step.id}-input-empty-key`] || errors[`step-${step.id}-input-invalid-key`]) && (
+                                      <p className="text-cyber-neonPink text-xs mt-1">
+                                        {errors[`step-${step.id}-input-empty-key`] || errors[`step-${step.id}-input-invalid-key`]}
+                                      </p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      💡 Input variables can be used in the prompt with {'{variable_name}'}
+                                    </p>
+                                  </div>
+
                                   <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
                                       OpenAI API Key (optional)
@@ -736,6 +862,83 @@ export default function WorkflowForm({ initial, onSave }: Props) {
                                     )}
                                     <p className="text-xs text-gray-500 mt-1">
                                       💡 Use variables like {'{target}'} or reference previous step outputs
+                                    </p>
+                                  </div>
+
+                                  {/* Input Variables Section */}
+                                  <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <label className="block text-sm font-medium text-gray-300">
+                                        Input Variables
+                                      </label>
+                                      <button
+                                        type="button"
+                                        className="px-2 py-1 text-xs rounded border border-cyber-neonCyan bg-cyber-neonCyan/20 text-cyber-neonCyan hover:shadow-neonCyan"
+                                        onClick={() => {
+                                          const newInputs = { ...(step.inputs || {}), '': '' }
+                                          updateStep(step.id, { inputs: newInputs })
+                                        }}
+                                      >
+                                        + Add Input
+                                      </button>
+                                    </div>
+                                    
+                                    {Object.entries(step.inputs || {}).length === 0 ? (
+                                      <div className="border border-slate-700 bg-cyber-panel/30 rounded px-3 py-2 text-gray-400 text-sm text-center">
+                                        No input variables. Click "Add Input" to add.
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-2 border border-slate-700 bg-cyber-panel/30 rounded p-3">
+                                        {Object.entries(step.inputs || {}).map(([key, value], index) => (
+                                          <div key={index} className="flex gap-2 items-center">
+                                            <input
+                                              className={`flex-1 border rounded px-2 py-1 text-gray-100 text-sm ${
+                                                errors[`step-${step.id}-input-empty-key`] || errors[`step-${step.id}-input-invalid-key`] 
+                                                  ? 'border-red-500 bg-red-900/30' 
+                                                  : 'border-slate-600 bg-cyber-panel/60'
+                                              }`}
+                                              value={key}
+                                              onChange={(e) => {
+                                                const newInputs = { ...(step.inputs || {}) }
+                                                delete newInputs[key]
+                                                newInputs[e.target.value] = value
+                                                updateStep(step.id, { inputs: newInputs })
+                                              }}
+                                              placeholder="variable_name"
+                                            />
+                                            <span className="text-gray-400">=</span>
+                                            <input
+                                              className="flex-1 border border-slate-600 bg-cyber-panel/60 rounded px-2 py-1 text-gray-100 text-sm"
+                                              value={value as string}
+                                              onChange={(e) => {
+                                                const newInputs = { ...(step.inputs || {}) }
+                                                newInputs[key] = e.target.value
+                                                updateStep(step.id, { inputs: newInputs })
+                                              }}
+                                              placeholder="default_value"
+                                            />
+                                            <button
+                                              type="button"
+                                              className="px-2 py-1 text-xs rounded border border-red-700 bg-red-900/30 text-red-400 hover:shadow-red-400/50"
+                                              onClick={() => {
+                                                const newInputs = { ...(step.inputs || {}) }
+                                                delete newInputs[key]
+                                                updateStep(step.id, { inputs: newInputs })
+                                              }}
+                                            >
+                                              ×
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {(errors[`step-${step.id}-input-empty-key`] || errors[`step-${step.id}-input-invalid-key`]) && (
+                                      <p className="text-cyber-neonPink text-xs mt-1">
+                                        {errors[`step-${step.id}-input-empty-key`] || errors[`step-${step.id}-input-invalid-key`]}
+                                      </p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                    💡 Input variables can be used in the prompt with {'{variable_name}'}
                                     </p>
                                   </div>
 
@@ -816,6 +1019,83 @@ export default function WorkflowForm({ initial, onSave }: Props) {
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
                                       💡 Use variables like {'{target}'}, {'{workflow_name}'}, or reference previous steps
+                                    </p>
+                                  </div>
+
+                                  {/* Input Variables Section */}
+                                  <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <label className="block text-sm font-medium text-gray-300">
+                                        Input Variables
+                                      </label>
+                                      <button
+                                        type="button"
+                                        className="px-2 py-1 text-xs rounded border border-cyber-neonYellow bg-cyber-neonYellow/20 text-cyber-neonYellow hover:shadow-neonYellow"
+                                        onClick={() => {
+                                          const newInputs = { ...(step.inputs || {}), '': '' }
+                                          updateStep(step.id, { inputs: newInputs })
+                                        }}
+                                      >
+                                        + Add Input
+                                      </button>
+                                    </div>
+                                    
+                                    {Object.entries(step.inputs || {}).length === 0 ? (
+                                      <div className="border border-slate-700 bg-cyber-panel/30 rounded px-3 py-2 text-gray-400 text-sm text-center">
+                                        No input variables. Click "Add Input" to add.
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-2 border border-slate-700 bg-cyber-panel/30 rounded p-3">
+                                        {Object.entries(step.inputs || {}).map(([key, value], index) => (
+                                          <div key={index} className="flex gap-2 items-center">
+                                            <input
+                                              className={`flex-1 border rounded px-2 py-1 text-gray-100 text-sm ${
+                                                errors[`step-${step.id}-input-empty-key`] || errors[`step-${step.id}-input-invalid-key`] 
+                                                  ? 'border-red-500 bg-red-900/30' 
+                                                  : 'border-slate-600 bg-cyber-panel/60'
+                                              }`}
+                                              value={key}
+                                              onChange={(e) => {
+                                                const newInputs = { ...(step.inputs || {}) }
+                                                delete newInputs[key]
+                                                newInputs[e.target.value] = value
+                                                updateStep(step.id, { inputs: newInputs })
+                                              }}
+                                              placeholder="variable_name"
+                                            />
+                                            <span className="text-gray-400">=</span>
+                                            <input
+                                              className="flex-1 border border-slate-600 bg-cyber-panel/60 rounded px-2 py-1 text-gray-100 text-sm"
+                                              value={value as string}
+                                              onChange={(e) => {
+                                                const newInputs = { ...(step.inputs || {}) }
+                                                newInputs[key] = e.target.value
+                                                updateStep(step.id, { inputs: newInputs })
+                                              }}
+                                              placeholder="default_value"
+                                            />
+                                            <button
+                                              type="button"
+                                              className="px-2 py-1 text-xs rounded border border-red-700 bg-red-900/30 text-red-400 hover:shadow-red-400/50"
+                                              onClick={() => {
+                                                const newInputs = { ...(step.inputs || {}) }
+                                                delete newInputs[key]
+                                                updateStep(step.id, { inputs: newInputs })
+                                              }}
+                                            >
+                                              ×
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {(errors[`step-${step.id}-input-empty-key`] || errors[`step-${step.id}-input-invalid-key`]) && (
+                                      <p className="text-cyber-neonPink text-xs mt-1">
+                                        {errors[`step-${step.id}-input-empty-key`] || errors[`step-${step.id}-input-invalid-key`]}
+                                      </p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                    💡 Input variables can be used in the prompt with {'{variable_name}'}
                                     </p>
                                   </div>
 

@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from .routers import workflows, runs, terminal
+from .routers import workflows, runs, terminal, reports
 
 # Load environment variables
 load_dotenv()
@@ -37,9 +37,13 @@ runs_dir.mkdir(parents=True, exist_ok=True)
 workflows_file = Path(os.getenv("WORKFLOWS_FILE", "data/workflows.json"))
 workflows_file.parent.mkdir(parents=True, exist_ok=True)
 
+reports_dir = Path(os.getenv("REPORTS_DIR", "data/reports"))
+reports_dir.mkdir(parents=True, exist_ok=True)
+
 app.include_router(workflows.router, prefix="/api/workflows", tags=["workflows"])
 app.include_router(runs.router, prefix="/api/runs", tags=["runs"])
 app.include_router(terminal.router, prefix="/api/terminal", tags=["terminal"])
+app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
 
 logger.info("LangFlow API started successfully")
 
