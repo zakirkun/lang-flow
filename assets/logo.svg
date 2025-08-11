@@ -1,0 +1,128 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Neon Glow Effects -->
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Circuit Pattern -->
+    <pattern id="circuitPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#0f1325"/>
+      <path d="M0,10 L10,10 M10,0 L10,20 M10,10 L20,10" stroke="#22d3ee" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+    
+    <!-- Gradient Backgrounds -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f1325;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f1325;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#39ff14;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="pinkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff3caa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#bgGradient)" stroke="url(#cyanGradient)" stroke-width="2" filter="url(#neonGlow)"/>
+  
+  <!-- Circuit Pattern Overlay -->
+  <circle cx="100" cy="100" r="85" fill="url(#circuitPattern)" opacity="0.6"/>
+  
+  <!-- Main Logo Elements -->
+  
+  <!-- Central Brain/AI Symbol -->
+  <g transform="translate(100,100)">
+    <!-- Brain Outline -->
+    <path d="M-25,-20 Q-30,-25 -25,-30 Q-15,-35 -5,-30 Q5,-35 15,-30 Q25,-25 25,-20 Q30,-10 25,0 Q30,10 25,20 Q15,25 5,20 Q-5,25 -15,20 Q-25,15 -25,0 Q-30,-10 -25,-20 Z" 
+          fill="none" stroke="url(#cyanGradient)" stroke-width="2" filter="url(#neonGlow)"/>
+    
+    <!-- Brain Neural Connections -->
+    <g stroke="url(#greenGradient)" stroke-width="1.5" fill="none" opacity="0.8">
+      <path d="M-20,-15 Q-10,-10 0,-15 Q10,-10 20,-15"/>
+      <path d="M-20,-5 Q-10,0 0,-5 Q10,0 20,-5"/>
+      <path d="M-20,5 Q-10,10 0,5 Q10,10 20,5"/>
+      <path d="M-20,15 Q-10,20 0,15 Q10,20 20,15"/>
+    </g>
+    
+    <!-- Central AI Core -->
+    <circle cx="0" cy="0" r="8" fill="url(#cyanGradient)" filter="url(#neonGlow)"/>
+    <circle cx="0" cy="0" r="4" fill="#39ff14" opacity="0.8"/>
+  </g>
+  
+  <!-- Flow Arrows -->
+  <g fill="url(#pinkGradient)" filter="url(#neonGlow)">
+    <!-- Left Arrow -->
+    <path d="M30,100 L50,90 L50,95 L70,95 L70,105 L50,105 L50,110 Z"/>
+    <!-- Right Arrow -->
+    <path d="M170,100 L150,90 L150,95 L130,95 L130,105 L150,105 L150,110 Z"/>
+    <!-- Top Arrow -->
+    <path d="M100,30 L90,50 L95,50 L95,70 L105,70 L105,50 L110,50 Z"/>
+    <!-- Bottom Arrow -->
+    <path d="M100,170 L90,150 L95,150 L95,130 L105,130 L105,150 L110,150 Z"/>
+  </g>
+  
+  <!-- Corner Tech Elements -->
+  <g stroke="url(#cyanGradient)" stroke-width="2" fill="none" filter="url(#neonGlow)">
+    <!-- Top Left -->
+    <path d="M20,20 L40,20 M20,20 L20,40"/>
+    <circle cx="25" cy="25" r="2" fill="url(#greenGradient)"/>
+    
+    <!-- Top Right -->
+    <path d="M180,20 L160,20 M180,20 L180,40"/>
+    <circle cx="175" cy="25" r="2" fill="url(#greenGradient)"/>
+    
+    <!-- Bottom Left -->
+    <path d="M20,180 L40,180 M20,180 L20,160"/>
+    <circle cx="25" cy="175" r="2" fill="url(#greenGradient)"/>
+    
+    <!-- Bottom Right -->
+    <path d="M180,180 L160,180 M180,180 L180,160"/>
+    <circle cx="175" cy="175" r="2" fill="url(#greenGradient)"/>
+  </g>
+  
+  <!-- Data Flow Lines -->
+  <g stroke="url(#greenGradient)" stroke-width="1" fill="none" opacity="0.6">
+    <path d="M40,60 Q60,50 80,60 Q90,65 100,60"/>
+    <path d="M160,60 Q140,50 120,60 Q110,65 100,60"/>
+    <path d="M40,140 Q60,150 80,140 Q90,135 100,140"/>
+    <path d="M160,140 Q140,150 120,140 Q110,135 100,140"/>
+  </g>
+  
+  <!-- Pulsing Elements -->
+  <g>
+    <circle cx="100" cy="100" r="50" fill="none" stroke="url(#cyanGradient)" stroke-width="1" opacity="0.3">
+      <animate attributeName="r" values="50;55;50" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="100" cy="100" r="65" fill="none" stroke="url(#pinkGradient)" stroke-width="1" opacity="0.2">
+      <animate attributeName="r" values="65;70;65" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.2;0.5;0.2" dur="3s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Text Elements -->
+  <text x="100" y="185" text-anchor="middle" font-family="Share Tech Mono, monospace" font-size="12" fill="url(#cyanGradient)" filter="url(#neonGlow)">
+    LangFlow
+  </text>
+  
+  <!-- Version Indicator -->
+  <text x="100" y="15" text-anchor="middle" font-family="Share Tech Mono, monospace" font-size="8" fill="url(#greenGradient)" opacity="0.8">
+    v2.0
+  </text>
+</svg> 

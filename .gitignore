@@ -1,0 +1,30 @@
+# Node
+node_modules
+
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+.venv
+
+# Docker
+*.log
+*.log.*
+*.log.*.*
+*.log.*.*.*
+*.log.*.*.*.*
+
+
+# Data
+data/

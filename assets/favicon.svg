@@ -1,0 +1,50 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <linearGradient id="cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#0891b2"/>
+    </linearGradient>
+    
+    <linearGradient id="green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#39ff14"/>
+      <stop offset="100%" style="stop-color:#22c55e"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <circle cx="16" cy="16" r="15" fill="#0f1325" stroke="url(#cyan)" stroke-width="1"/>
+  
+  <!-- Central Brain/AI -->
+  <g transform="translate(16,16)">
+    <!-- Brain outline -->
+    <path d="M-6,-4 Q-7,-6 -6,-7 Q-3,-8 -1,-7 Q1,-8 3,-7 Q6,-6 6,-4 Q7,-2 6,0 Q7,2 6,4 Q3,5 1,4 Q-1,5 -3,4 Q-6,3 -6,0 Q-7,-2 -6,-4 Z" 
+          fill="none" stroke="url(#cyan)" stroke-width="1" filter="url(#glow)"/>
+    
+    <!-- Neural connections -->
+    <g stroke="url(#green)" stroke-width="0.5" fill="none" opacity="0.8">
+      <path d="M-4,-3 Q-2,-2 0,-3 Q2,-2 4,-3"/>
+      <path d="M-4,0 Q-2,1 0,0 Q2,1 4,0"/>
+      <path d="M-4,3 Q-2,4 0,3 Q2,4 4,3"/>
+    </g>
+    
+    <!-- Core -->
+    <circle cx="0" cy="0" r="2" fill="url(#cyan)" filter="url(#glow)"/>
+    <circle cx="0" cy="0" r="1" fill="#39ff14"/>
+  </g>
+  
+  <!-- Flow indicators -->
+  <g fill="url(#green)" opacity="0.6">
+    <circle cx="8" cy="16" r="1"/>
+    <circle cx="24" cy="16" r="1"/>
+    <circle cx="16" cy="8" r="1"/>
+    <circle cx="16" cy="24" r="1"/>
+  </g>
+</svg> 
