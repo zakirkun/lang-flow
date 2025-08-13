@@ -42,7 +42,7 @@ export default function WorkflowDetail({ workflow, onBack }: Props) {
       position: { x: index * 200, y: 100 },
       data: { 
         label: step.name, 
-        kind: step.type 
+        type: step.type 
       },
       type: 'card'
     }))

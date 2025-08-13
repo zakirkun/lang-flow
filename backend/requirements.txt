@@ -6,4 +6,5 @@ openai>=1.30.0
 langchain>=0.2.0
 langchain-openai>=0.1.7
 httpx>=0.27.0
-reportlab>=4.0.0 
+docker>=7.0.0
+reportlab>=4.4.3

@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function WorkflowBuilder({ value, onChange }: Props) {
-  const [nodes, setNodes] = useState<Node[]>(() => value.steps.map((s, i) => ({ id: s.id, position: { x: i * 180, y: 80 }, data: { label: s.name, kind: s.type }, type: 'card' })))
+  const [nodes, setNodes] = useState<Node[]>(() => value.steps.map((s, i) => ({ id: s.id, position: { x: i * 180, y: 80 }, data: { label: s.name, type: s.type }, type: 'card' })))
   const [edges, setEdges] = useState<Edge[]>(() => (value.graph?.edges as Edge[]) || [])
 
   // Keep node list in sync with workflow steps
@@ -24,8 +24,8 @@ export default function WorkflowBuilder({ value, onChange }: Props) {
         const existing = prevMap.get(s.id)
         next.push(
           existing
-            ? { ...existing, data: { ...existing.data, label: s.name, kind: s.type } }
-            : { id: s.id, position: { x: i * 180, y: 80 }, data: { label: s.name, kind: s.type }, type: 'card' }
+            ? { ...existing, data: { ...existing.data, label: s.name, type: s.type } }
+            : { id: s.id, position: { x: i * 180, y: 80 }, data: { label: s.name, type: s.type }, type: 'card' }
         )
       })
       return next
@@ -62,7 +62,7 @@ export default function WorkflowBuilder({ value, onChange }: Props) {
       ...(kind === 'ai' ? { model: { provider: 'openai', model: 'gpt-4o-mini' } } : {}),
       ...(kind === 'report' ? { report_config: { channels: [], template: '', subject: '' } } : {}),
     }
-    onChange({ ...value, steps: [...value.steps, step], graph: { nodes: [...nodes, { id, position: { x: 80, y: 80 }, data: { label: name, kind }, type: 'card' }], edges } })
+    onChange({ ...value, steps: [...value.steps, step], graph: { nodes: [...nodes, { id, position: { x: 80, y: 80 }, data: { label: name, type: kind }, type: 'card' }], edges } })
   }
 
   return (

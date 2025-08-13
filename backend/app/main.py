@@ -1,12 +1,11 @@
-import logging
 import os
-from pathlib import Path
-
+import logging
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
+from pathlib import Path
 
-from .routers import workflows, runs, terminal, reports
+from .routers import workflows, runs, terminal, playground
 
 # Load environment variables
 load_dotenv()
@@ -16,11 +15,14 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger(__name__)
 
-app = FastAPI(title="LangFlow API")
+app = FastAPI(
+    title="LangFlow API",
+    description="AI-Powered Security Automation Workflow Engine",
+    version="1.0.0"
+)
 
-# CORS
+# CORS configuration
 origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
@@ -30,23 +32,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Ensure data directories exist
+# Create data directories
+data_dir = Path("data")
+data_dir.mkdir(exist_ok=True)
 runs_dir = Path(os.getenv("RUNS_DIR", "data/runs"))
-runs_dir.mkdir(parents=True, exist_ok=True)
+runs_dir.mkdir(exist_ok=True)
 
-workflows_file = Path(os.getenv("WORKFLOWS_FILE", "data/workflows.json"))
-workflows_file.parent.mkdir(parents=True, exist_ok=True)
-
-reports_dir = Path(os.getenv("REPORTS_DIR", "data/reports"))
-reports_dir.mkdir(parents=True, exist_ok=True)
-
+# Include routers
 app.include_router(workflows.router, prefix="/api/workflows", tags=["workflows"])
 app.include_router(runs.router, prefix="/api/runs", tags=["runs"])
 app.include_router(terminal.router, prefix="/api/terminal", tags=["terminal"])
-app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
-
-logger.info("LangFlow API started successfully")
+app.include_router(playground.router, prefix="/api/playground", tags=["playground"])
 
 @app.get("/")
-def read_root():
-    return {"message": "LangFlow API"} 
+async def root():
+    return {
+        "message": "🚀 LangFlow API - AI-Powered Security Automation",
+        "version": "1.0.0",
+        "features": [
+            "AI Workflow Engine",
+            "Command Execution",
+            "Report Generation", 
+            "Real-time Logs",
+            "Interactive Terminal",
+            "Virtual Playground"
+        ]
+    }
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "LangFlow API is running"}

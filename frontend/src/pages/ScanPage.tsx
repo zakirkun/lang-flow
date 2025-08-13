@@ -7,7 +7,15 @@ import RunHistoryModal from '../components/RunHistoryModal'
 import { startRun, getWorkflow } from '../api'
 
 export default function ScanPage({ workflowId }: { workflowId?: string }) {
-  const [workflow, setWorkflow] = useState<Workflow>({ id: crypto.randomUUID(), name: 'New Pentest', description: '', steps: [] })
+  const [workflow, setWorkflow] = useState<Workflow>({ 
+    id: crypto.randomUUID(), 
+    name: 'New Pentest', 
+    description: '', 
+    steps: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  })
+  
   const [runId, setRunId] = useState<string | undefined>(undefined)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -16,18 +24,22 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
   const [currentStepId, setCurrentStepId] = useState<string | undefined>(undefined)
   const [completedSteps, setCompletedSteps] = useState<string[]>([])
   const [logs, setLogs] = useState<StepLog[]>([])
+  const [workflowLoaded, setWorkflowLoaded] = useState(false)
 
   useEffect(() => {
     if (!workflowId) return
     setLoading(true)
     setError(null)
+    setWorkflowLoaded(false)
     getWorkflow(workflowId)
       .then((wf) => {
         setWorkflow(wf)
+        setWorkflowLoaded(true)
         setError(null)
       })
       .catch((e) => {
         setError(`Failed to load workflow: ${e.message}`)
+        setWorkflowLoaded(false)
       })
       .finally(() => {
         setLoading(false)
@@ -57,8 +69,15 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
 
   async function handleStart() {
     const wf = workflow
-    if (!wf.id || wf.steps.length === 0) {
-      alert('No workflow steps to execute')
+    
+    // Fix: Check if workflowId exists and workflow was properly loaded
+    if (!workflowId) {
+      alert('No workflow selected. Please select a workflow from the Workflows tab.')
+      return
+    }
+    
+    if (!workflowLoaded || !wf.id || wf.steps.length === 0) {
+      alert('No workflow steps to execute or workflow not properly loaded')
       return
     }
     
@@ -84,11 +103,11 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
 
   // Auto-start when workflowId provided and steps exist (but not if loading)
   useEffect(() => {
-    if (workflowId && workflow.steps.length > 0 && !loading && !error && !isRunning) {
+    if (workflowId && workflow.steps.length > 0 && !loading && !error && !isRunning && workflowLoaded) {
       handleStart()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workflowId, workflow.id, workflow.steps.length, loading, error])
+  }, [workflowId, workflow.id, workflow.steps.length, loading, error, workflowLoaded])
 
   if (loading) {
     return (
@@ -118,6 +137,24 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
     )
   }
 
+  // Fix: Show message when no workflow is selected
+  if (!workflowId) {
+    return (
+      <div className="max-w-2xl mx-auto py-16">
+        <div className="border border-slate-800 bg-cyber-panel/20 rounded-lg p-8 text-center">
+          <div className="text-4xl mb-4 opacity-50">🔍</div>
+          <h3 className="text-xl font-medium text-gray-300 mb-2">No Workflow Selected</h3>
+          <p className="text-gray-400 mb-4">
+            Please select a workflow from the Workflows tab to start scanning
+          </p>
+          <p className="text-sm text-gray-500">
+            Navigate to Workflows → Click "Run" on any workflow to begin
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -137,7 +174,7 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
             <button 
               className="px-4 py-2 rounded border border-green-800 bg-green-900/30 text-cyber-neonGreen hover:shadow-neonGreen transition-all disabled:opacity-50"
               onClick={handleStart}
-              disabled={workflow.steps.length === 0}
+              disabled={workflow.steps.length === 0 || !workflowId || !workflowLoaded}
             >
               ▶️ Start Scan
             </button>

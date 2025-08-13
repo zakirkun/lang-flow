@@ -1,21 +1,10 @@
-export type StepType = 'ai' | 'command' | 'report'
+export {}
 
 export interface AIModel {
   provider: 'openai'
   model: string
   api_key?: string
 }
-
-export interface ReportConfig {
-  channels: ReportChannel[]
-  template?: string
-  subject?: string
-}
-
-export type ReportChannel = 
-  | { type: 'email'; config: EmailConfig }
-  | { type: 'telegram'; config: TelegramConfig }
-  | { type: 'slack'; config: SlackConfig }
 
 export interface EmailConfig {
   type: 'email'
@@ -25,7 +14,7 @@ export interface EmailConfig {
   smtp_password: string
   from_email: string
   to_emails: string[]
-  use_tls?: boolean
+  use_tls: boolean
 }
 
 export interface TelegramConfig {
@@ -41,24 +30,52 @@ export interface SlackConfig {
   username?: string
 }
 
+export type ReportChannel = 
+  | { type: 'email'; config: EmailConfig }
+  | { type: 'telegram'; config: TelegramConfig }
+  | { type: 'slack'; config: SlackConfig }
+
+export interface ReportConfig {
+  channels: ReportChannel[]
+  template?: string
+  subject?: string
+}
+
+export type StepType = 'ai' | 'command' | 'report'
+
 export interface PentestStep {
   id: string
   name: string
   type: StepType
   description?: string
+  
+  // AI step fields
   prompt?: string
   model?: AIModel
+  
+  // Command step fields
   command?: string
   working_dir?: string
   timeout_seconds?: number
-  inputs?: Record<string, any>
+  
+  // Report step fields
   report_config?: ReportConfig
+  
+  // Inputs/templating
+  inputs?: Record<string, any>
 }
 
-// Lightweight graph type compatible with React Flow serialization
 export interface WorkflowGraph {
-  nodes?: Array<Record<string, any>>
-  edges?: Array<Record<string, any>>
+  nodes: Array<{
+    id: string
+    position: { x: number; y: number }
+    data: { label: string; type: string }
+  }>
+  edges: Array<{
+    id: string
+    source: string
+    target: string
+  }>
 }
 
 export interface Workflow {
@@ -66,8 +83,8 @@ export interface Workflow {
   name: string
   description?: string
   steps: PentestStep[]
-  created_at?: string
-  updated_at?: string
+  created_at: string
+  updated_at: string
   graph?: WorkflowGraph
 }
 
@@ -92,4 +109,44 @@ export interface RunResult {
   logs: StepLog[]
 }
 
-export {}
+// Virtual Playground Types
+export interface PlaygroundInstance {
+  id: string
+  name: string
+  container_id: string
+  ssh_port: number
+  docker_port: number
+  web_port: number
+  status: 'creating' | 'running' | 'stopped' | 'error' | 'expired' | 'installing'
+  created_at: string
+  expires_at: string
+  last_activity: string
+  terminal_sessions: Record<string, any>
+  environment: Record<string, string>
+  resource_limits: Record<string, any>
+}
+
+export interface PlaygroundStats {
+  cpu_usage: number
+  memory_usage: number
+  memory_limit: number
+  disk_usage: number
+  network_rx: number
+  network_tx: number
+  uptime: number
+  containers_count: number
+}
+
+export interface PlaygroundCommand {
+  command: string
+  working_dir?: string
+  environment?: Record<string, string>
+}
+
+export interface PlaygroundTerminalSession {
+  session_id: string
+  instance_id: string
+  created_at: string
+  last_activity: string
+  status: 'active' | 'inactive' | 'closed'
+}

@@ -1,9 +1,9 @@
 import React from 'react'
 import { Handle, Position, type NodeProps } from 'reactflow'
 
-export default function NodeCard(props: NodeProps<{ label: string; kind?: 'ai'|'command'|'report' }>) {
+export default function NodeCard(props: NodeProps<{ label: string; type?: 'ai'|'command'|'report' }>) {
   const { data } = props
-  const kind = data?.kind ?? 'command'
+  const kind = data?.type ?? 'command'
   const aiStyle = 'border-2 border-cyber-neonGreen bg-gradient-to-br from-green-900/40 to-cyber-panel/60 shadow-neonGreen'
   const commandStyle = 'border-2 border-cyber-neonPink bg-gradient-to-br from-pink-900/40 to-cyber-panel/60 shadow-neonPink'
   const reportStyle = 'border-2 border-cyber-neonYellow bg-gradient-to-br from-yellow-900/40 to-cyber-panel/60 shadow-neonYellow'

@@ -96,4 +96,46 @@ class RunResult(BaseModel):
     started_at: datetime = Field(default_factory=datetime.utcnow)
     finished_at: Optional[datetime] = None
     context: Dict[str, Any] = Field(default_factory=dict)
-    logs: List[StepLog] = Field(default_factory=list) 
+    logs: List[StepLog] = Field(default_factory=list)
+
+
+# Virtual Playground Models
+class PlaygroundInstance(BaseModel):
+    id: str
+    name: str
+    container_id: str
+    ssh_port: int
+    docker_port: int
+    web_port: int
+    status: Literal["creating", "running", "stopped", "error", "expired", "installing"] = "creating"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    expires_at: datetime
+    last_activity: datetime = Field(default_factory=datetime.utcnow)
+    terminal_sessions: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+    environment: Dict[str, str] = Field(default_factory=dict)
+    resource_limits: Dict[str, Any] = Field(default_factory=dict)
+
+
+class PlaygroundCommand(BaseModel):
+    command: str
+    working_dir: Optional[str] = None
+    environment: Optional[Dict[str, str]] = None
+
+
+class PlaygroundTerminalSession(BaseModel):
+    session_id: str
+    instance_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    last_activity: datetime = Field(default_factory=datetime.utcnow)
+    status: Literal["active", "inactive", "closed"] = "active"
+
+
+class PlaygroundStats(BaseModel):
+    cpu_usage: float
+    memory_usage: float
+    memory_limit: int
+    disk_usage: float
+    network_rx: int
+    network_tx: int
+    uptime: int
+    containers_count: int 

@@ -63,6 +63,17 @@ def start_run(workflow_id: str, context: Optional[Dict] = Body(default=None)):
     return {"status": "started", "run_id": run_id}
 
 
+# Backward compatibility endpoint for old API format
+@router.post("/")
+def start_run_old_format(data: Dict = Body(...)):
+    workflow_id = data.get("workflow_id")
+    if not workflow_id:
+        raise HTTPException(status_code=400, detail="workflow_id is required")
+    
+    context = data.get("context")
+    return start_run(workflow_id, context)
+
+
 @router.get("/{run_id}", response_model=RunResult)
 def get_run(run_id: str) -> RunResult:
     if run_id in _RUNS:

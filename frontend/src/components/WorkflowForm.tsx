@@ -156,7 +156,14 @@ const WORKFLOW_TEMPLATES = [
 
 export default function WorkflowForm({ initial, onSave }: Props) {
   const [workflow, setWorkflow] = useState<Workflow>(
-    initial ?? { id: crypto.randomUUID(), name: '', description: '', steps: [] }
+    initial ?? { 
+      id: crypto.randomUUID(), 
+      name: '', 
+      description: '', 
+      steps: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
   )
   const [showBuilder, setShowBuilder] = useState(false)
   const [activeStep, setActiveStep] = useState<string | null>(null)
@@ -395,7 +402,7 @@ export default function WorkflowForm({ initial, onSave }: Props) {
           position: { x: index * 200, y: 100 },
           data: { 
             label: step.name, 
-            kind: step.type 
+            type: step.type 
           },
           type: 'card'
         }))

@@ -6,10 +6,11 @@ from pathlib import Path
 from typing import List, Optional
 from threading import RLock
 
-from ..models import Workflow, RunResult
+from ..models import Workflow, RunResult, PlaygroundInstance
 
 _DATA_DIR = Path("backend/data")
 _WORKFLOWS_FILE = Path(os.getenv("WORKFLOWS_FILE", _DATA_DIR / "workflows.json"))
+_PLAYGROUND_FILE = Path(os.getenv("PLAYGROUND_FILE", _DATA_DIR / "playground.json"))
 _RUNS_DIR = Path(os.getenv("RUNS_DIR", _DATA_DIR / "runs"))
 
 _LOCK = RLock()
@@ -20,6 +21,8 @@ def _ensure_storage():
     _RUNS_DIR.mkdir(parents=True, exist_ok=True)
     if not _WORKFLOWS_FILE.exists():
         _WORKFLOWS_FILE.write_text("[]", encoding="utf-8")
+    if not _PLAYGROUND_FILE.exists():
+        _PLAYGROUND_FILE.write_text("[]", encoding="utf-8")
 
 
 def list_workflows() -> List[Workflow]:
@@ -93,4 +96,60 @@ def list_runs() -> List[RunResult]:
             results.append(RunResult.model_validate(data))
         except Exception:
             continue
-    return results 
+    return results
+
+
+# Playground persistence
+
+def list_playground_instances() -> List[PlaygroundInstance]:
+    """Load all playground instances from storage"""
+    _ensure_storage()
+    with _LOCK:
+        try:
+            data = json.loads(_PLAYGROUND_FILE.read_text(encoding="utf-8"))
+            return [PlaygroundInstance.model_validate(item) for item in data]
+        except Exception:
+            return []
+
+
+def save_playground_instances(instances: List[PlaygroundInstance]) -> None:
+    """Save all playground instances to storage"""
+    _ensure_storage()
+    with _LOCK:
+        _PLAYGROUND_FILE.write_text(
+            json.dumps([instance.model_dump(mode="json") for instance in instances], indent=2),
+            encoding="utf-8",
+        )
+
+
+def get_playground_instance(instance_id: str) -> Optional[PlaygroundInstance]:
+    """Get a playground instance by ID"""
+    for instance in list_playground_instances():
+        if instance.id == instance_id:
+            return instance
+    return None
+
+
+def save_playground_instance(instance: PlaygroundInstance) -> None:
+    """Save or update a single playground instance"""
+    instances = list_playground_instances()
+    found = False
+    for i, existing in enumerate(instances):
+        if existing.id == instance.id:
+            instances[i] = instance
+            found = True
+            break
+    if not found:
+        instances.append(instance)
+    save_playground_instances(instances)
+
+
+def delete_playground_instance(instance_id: str) -> bool:
+    """Delete a playground instance from storage"""
+    instances = list_playground_instances()
+    original_count = len(instances)
+    instances = [instance for instance in instances if instance.id != instance_id]
+    if len(instances) < original_count:
+        save_playground_instances(instances)
+        return True
+    return False 
