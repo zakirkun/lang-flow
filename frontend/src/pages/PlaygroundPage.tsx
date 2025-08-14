@@ -5,10 +5,9 @@ import {
   createPlaygroundInstance, 
   deletePlaygroundInstance,
   extendPlaygroundInstance,
-  getPlaygroundStats,
-  playgroundTerminalWsUrl
+  getPlaygroundStats
 } from '../api'
-import PlaygroundTerminal from '../components/PlaygroundTerminal'
+import PlaygroundFileManager from '../components/PlaygroundFileManager'
 import PlaygroundInstanceCard from '../components/PlaygroundInstanceCard'
 import CreatePlaygroundModal from '../components/CreatePlaygroundModal'
 
@@ -236,17 +235,19 @@ export default function PlaygroundPage() {
         {/* Terminal/Details Panel */}
         <div className="xl:col-span-2">
           {selectedInstance ? (
-            <PlaygroundTerminal
+            <PlaygroundFileManager
               instance={selectedInstance}
               stats={instanceStats[selectedInstance.id]}
             />
           ) : (
-            <div className="border border-slate-800 rounded-lg p-8 text-center bg-cyber-panel/10 h-96 flex flex-col items-center justify-center">
-              <div className="text-6xl mb-4 opacity-50">🎮</div>
+            <div className="bg-cyber-panel rounded-lg border border-cyber-neonCyan/30 p-8">
               <h3 className="text-xl font-medium text-gray-300 mb-2">Select a Playground Instance</h3>
-              <p className="text-gray-400">
-                Choose an instance from the list to access its terminal and manage files
+              <p className="text-gray-400 mb-4">
+                Choose an instance from the list to access its file manager and browse files
               </p>
+              <div className="text-sm text-gray-500">
+                💡 File manager features: Browse directories, edit files, upload/download, create new files and folders
+              </div>
             </div>
           )}
         </div>

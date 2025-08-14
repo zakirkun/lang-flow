@@ -199,11 +199,6 @@ export async function getPlaygroundStats(instanceId: string): Promise<Playground
   return response.json()
 }
 
-export function playgroundTerminalWsUrl(instanceId: string): string {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  return `${protocol}//${window.location.host}${API_BASE}/playground/${instanceId}/terminal`
-}
-
 export async function uploadPlaygroundFile(instanceId: string, filePath: string, content: string): Promise<void> {
   const response = await fetch(`${API_BASE}/playground/${instanceId}/files`, {
     method: 'POST',
@@ -217,4 +212,28 @@ export async function listPlaygroundFiles(instanceId: string, path: string = '/p
   const response = await fetch(`${API_BASE}/playground/${instanceId}/files?path=${encodeURIComponent(path)}`)
   if (!response.ok) throw new Error('Failed to list files')
   return response.json()
+}
+
+export async function downloadPlaygroundFile(instanceId: string, filePath: string): Promise<string> {
+  const response = await fetch(`${API_BASE}/playground/${instanceId}/files/download?path=${encodeURIComponent(filePath)}`)
+  if (!response.ok) throw new Error('Failed to download file')
+  return response.text()
+}
+
+export async function deletePlaygroundFile(instanceId: string, filePath: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/playground/${instanceId}/files/delete`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file_path: filePath })
+  })
+  if (!response.ok) throw new Error('Failed to delete file')
+}
+
+export async function createPlaygroundDirectory(instanceId: string, dirPath: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/playground/${instanceId}/files/mkdir`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dir_path: dirPath })
+  })
+  if (!response.ok) throw new Error('Failed to create directory')
 } 

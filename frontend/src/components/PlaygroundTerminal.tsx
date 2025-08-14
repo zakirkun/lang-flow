@@ -3,11 +3,7 @@ import { Terminal as XTerm } from 'xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import 'xterm/css/xterm.css'
 import { PlaygroundInstance, PlaygroundStats } from '../types'
-
-function playgroundTerminalWsUrl(instanceId: string): string {
-  const base = window.location.origin.replace('http', 'ws')
-  return `${base}/api/playground/${instanceId}/terminal`
-}
+import { playgroundTerminalWsUrl } from '../api'
 
 interface Props {
   instance: PlaygroundInstance
@@ -19,21 +15,15 @@ export default function PlaygroundTerminal({ instance, stats }: Props) {
   const termRef = useRef<XTerm | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
-  const reconnectTimeoutRef = useRef<number | null>(null)
   const pingIntervalRef = useRef<number | null>(null)
   
   const [connected, setConnected] = useState(false)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [reconnectAttempts, setReconnectAttempts] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [searchVisible, setSearchVisible] = useState(false)
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [reconnectCountdown, setReconnectCountdown] = useState(0)
   
-  const maxReconnectAttempts = 1
-  
-  // Enhanced WebSocket connection with auto-reconnect and delay
+  // Simple WebSocket connection like Terminal component
   const connectWebSocket = useCallback(() => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       return // Already connected
@@ -44,168 +34,101 @@ export default function PlaygroundTerminal({ instance, stats }: Props) {
       return
     }
 
-    // Add 5-second delay before each connection attempt
-    setConnectionError('Connecting to terminal...')
-    setIsConnecting(true)
-    setReconnectCountdown(5)
-    
-    // Countdown timer
-    const countdownInterval = window.setInterval(() => {
-      setReconnectCountdown(prev => {
-        if (prev <= 1) {
-          window.clearInterval(countdownInterval)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-    
-    setTimeout(() => {
-      window.clearInterval(countdownInterval)
-      setIsConnecting(false)
-      setReconnectCountdown(0)
-      
-      if (instance.status !== 'running') {
-        setConnectionError('Instance is not running')
-        return
-      }
+    setConnectionError(null)
+    const ws = new WebSocket(playgroundTerminalWsUrl(instance.id))
+    wsRef.current = ws
 
+    ws.onopen = () => {
+      setConnected(true)
       setConnectionError(null)
-      const ws = new WebSocket(playgroundTerminalWsUrl(instance.id))
-      wsRef.current = ws
-
-      ws.onopen = () => {
-        setConnected(true)
-        setConnectionError(null)
-        setReconnectAttempts(0)
-        setIsConnecting(false)
-        setReconnectCountdown(0)
-        
-        // Start ping interval to keep connection alive
-        if (pingIntervalRef.current) {
-          window.clearInterval(pingIntervalRef.current)
-        }
-        pingIntervalRef.current = window.setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'ping' }))
-          }
-        }, 30000) // Ping every 30 seconds
+      
+      // Start ping interval to keep connection alive
+      if (pingIntervalRef.current) {
+        window.clearInterval(pingIntervalRef.current)
       }
-
-      ws.onclose = (event) => {
-        setConnected(false)
-        setSessionId(null)
-        
-        // Clear ping interval
-        if (pingIntervalRef.current) {
-          window.clearInterval(pingIntervalRef.current)
-          pingIntervalRef.current = null
+      pingIntervalRef.current = window.setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'ping' }))
         }
+      }, 30000) // Ping every 30 seconds
+    }
+
+    ws.onclose = (event) => {
+      setConnected(false)
+      setSessionId(null)
+      
+      // Clear ping interval
+      if (pingIntervalRef.current) {
+        window.clearInterval(pingIntervalRef.current)
+        pingIntervalRef.current = null
+      }
+      
+      console.log(`WebSocket closed for instance ${instance.id}:`, event.code, event.reason)
+      
+      if (termRef.current && !event.wasClean) {
+        termRef.current.write('\r\n\x1b[38;5;196m╔══════════════════════════════════════════╗\x1b[0m\r\n')
+        termRef.current.write('\x1b[38;5;196m║           Connection Lost                ║\x1b[0m\r\n')
+        termRef.current.write('\x1b[38;5;196m║     Disconnected from playground         ║\x1b[0m\r\n')
+        termRef.current.write('\x1b[38;5;214m║   Click reconnect to establish new      ║\x1b[0m\r\n')
+        termRef.current.write('\x1b[38;5;214m║        connection                       ║\x1b[0m\r\n')
+        termRef.current.write('\x1b[38;5;196m╚══════════════════════════════════════════╝\x1b[0m\r\n')
+      }
+    }
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error)
+      setConnectionError('Failed to connect to playground terminal')
+      setConnected(false)
+      if (termRef.current) {
+        termRef.current.write('\r\n\x1b[38;5;196m[ERROR] Connection failed - Check instance status\x1b[0m\r\n')
+      }
+    }
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
         
-        console.log(`WebSocket closed for instance ${instance.id}:`, event.code, event.reason)
-        
-        if (termRef.current && !event.wasClean) {
-          termRef.current.write('\r\n\x1b[38;5;196m╔══════════════════════════════════════════╗\x1b[0m\r\n')
-          termRef.current.write('\x1b[38;5;196m║           Connection Lost                ║\x1b[0m\r\n')
-          termRef.current.write('\x1b[38;5;196m║     Reconnecting in 5 seconds...         ║\x1b[0m\r\n')
-          termRef.current.write('\x1b[38;5;196m╚══════════════════════════════════════════╝\x1b[0m\r\n')
-          
-          // Auto-reconnect logic with 5-second base delay
-          if (reconnectAttempts < maxReconnectAttempts && instance.status === 'running') {
-            const baseDelay = 5000 // 5 seconds base delay
-            const exponentialDelay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000)
-            const totalDelay = baseDelay + exponentialDelay
-            const totalSeconds = Math.ceil(totalDelay / 1000)
+        switch (data.type) {
+          case 'connected':
+            console.log('Terminal connected successfully')
+            setSessionId(data.session_id)
+            break
             
-            setReconnectAttempts(prev => prev + 1)
-            setConnectionError(`Reconnecting in ${totalSeconds} seconds... (Attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`)
-            setIsConnecting(true)
-            setReconnectCountdown(totalSeconds)
+          case 'output':
+            // Write output from container to terminal
+            if (data.data && termRef.current) {
+              termRef.current.write(data.data)
+            }
+            break
             
-            // Countdown timer for reconnect
-            const reconnectCountdownInterval = window.setInterval(() => {
-              setReconnectCountdown(prev => {
-                const newCount = prev - 1
-                if (newCount > 0) {
-                  setConnectionError(`Reconnecting in ${newCount} seconds... (Attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`)
-                }
-                if (newCount <= 0) {
-                  window.clearInterval(reconnectCountdownInterval)
-                }
-                return newCount
-              })
-            }, 1000)
+          case 'error':
+            console.error('Terminal error:', data.message)
+            if (termRef.current) {
+              termRef.current.write(`\r\n❌ Error: ${data.message}\r\n`)
+            }
+            break
             
-            reconnectTimeoutRef.current = window.setTimeout(() => {
-              window.clearInterval(reconnectCountdownInterval)
-              connectWebSocket()
-            }, totalDelay)
-          } else {
-            termRef.current.write('\r\n\x1b[38;5;196m╔══════════════════════════════════════════╗\x1b[0m\r\n')
-            termRef.current.write('\x1b[38;5;196m║     Max reconnection attempts reached     ║\x1b[0m\r\n')
-            termRef.current.write('\x1b[38;5;196m║     Please refresh the page              ║\x1b[0m\r\n')
-            termRef.current.write('\x1b[38;5;196m╚══════════════════════════════════════════╝\x1b[0m\r\n')
-            setConnectionError('Max reconnection attempts reached. Please refresh the page.')
-            setIsConnecting(false)
-            setReconnectCountdown(0)
-          }
+          case 'pong':
+            // Handle keepalive response
+            console.log('Received pong from terminal')
+            break
+            
+          default:
+            // Handle any raw output data
+            if ((data.data || typeof data === 'string') && termRef.current) {
+              const output = data.data || data
+              termRef.current.write(output)
+            }
+        }
+      } catch (error) {
+        // Handle raw text messages (fallback)
+        console.log('Raw terminal output:', event.data)
+        if (termRef.current) {
+          termRef.current.write(event.data)
         }
       }
-
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error)
-        setConnectionError('Failed to connect to playground terminal')
-        setConnected(false)
-        setIsConnecting(false)
-        setReconnectCountdown(0)
-      }
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          
-          switch (data.type) {
-            case 'connected':
-              console.log('Terminal connected successfully')
-              setIsConnecting(false)
-              break
-              
-            case 'output':
-              // Write output from container to terminal
-              if (data.data && termRef.current) {
-                termRef.current.write(data.data)
-              }
-              break
-              
-            case 'error':
-              console.error('Terminal error:', data.message)
-              if (termRef.current) {
-                termRef.current.write(`\r\n❌ Error: ${data.message}\r\n`)
-              }
-              break
-              
-            case 'pong':
-              // Handle keepalive response
-              console.log('Received pong from terminal')
-              break
-              
-            default:
-              // Handle any raw output data
-              if ((data.data || typeof data === 'string') && termRef.current) {
-                const output = data.data || data
-                termRef.current.write(output)
-              }
-          }
-        } catch (error) {
-          // Handle raw text messages (fallback)
-          console.log('Raw terminal output:', event.data)
-          if (termRef.current) {
-            termRef.current.write(event.data)
-          }
-        }
-      }
-    }, 5000) // 5-second delay before each connection attempt
-  }, [instance, reconnectAttempts])
+    }
+  }, [instance])
 
   // Initialize terminal with enhanced features
   useEffect(() => {
@@ -374,9 +297,6 @@ export default function PlaygroundTerminal({ instance, stats }: Props) {
       document.removeEventListener('keydown', handleKeyDown)
       
       // Clear timeouts and intervals
-      if (reconnectTimeoutRef.current) {
-        window.clearTimeout(reconnectTimeoutRef.current)
-      }
       if (pingIntervalRef.current) {
         window.clearInterval(pingIntervalRef.current)
       }
@@ -393,10 +313,25 @@ export default function PlaygroundTerminal({ instance, stats }: Props) {
 
   // Effect to monitor instance status changes
   useEffect(() => {
-    if (instance.status === 'running' && !connected && reconnectAttempts < maxReconnectAttempts) {
+    if (instance.status === 'running' && !connected) {
       connectWebSocket()
     }
-  }, [instance.status, connected, reconnectAttempts, connectWebSocket])
+  }, [instance.status, connected, connectWebSocket])
+
+  // Simple reconnect function like Terminal component
+  const reconnectTerminal = useCallback(() => {
+    if (wsRef.current) {
+      wsRef.current.close()
+      wsRef.current = null
+    }
+    setConnected(false)
+    setConnectionError(null)
+    
+    // Wait a bit before reconnecting
+    setTimeout(() => {
+      connectWebSocket()
+    }, 500)
+  }, [connectWebSocket])
 
   // Search functionality (simplified without addon)
   const handleSearch = (searchTerm: string) => {
@@ -450,11 +385,10 @@ export default function PlaygroundTerminal({ instance, stats }: Props) {
           {/* Reconnect Button */}
           {!connected && (
             <button
-              onClick={connectWebSocket}
-              disabled={reconnectAttempts >= maxReconnectAttempts || isConnecting}
-              className="px-2 py-1 text-xs rounded border border-cyber-neonGreen/50 bg-cyber-neonGreen/10 text-cyber-neonGreen hover:bg-cyber-neonGreen/20 transition-all disabled:opacity-50"
+              onClick={reconnectTerminal}
+              className="px-2 py-1 text-xs rounded border border-cyber-neonGreen/50 bg-cyber-neonGreen/10 text-cyber-neonGreen hover:bg-cyber-neonGreen/20 transition-all"
             >
-              {isConnecting ? `🔄 Connecting${reconnectCountdown > 0 ? ` (${reconnectCountdown}s)` : '...'}` : '🔄 Reconnect'}
+              🔄 Reconnect
             </button>
           )}
         </div>
@@ -500,12 +434,7 @@ export default function PlaygroundTerminal({ instance, stats }: Props) {
       {connectionError && (
         <div className="p-3 bg-red-900/20 border-b border-red-500/30">
           <div className="text-red-400 text-sm font-mono">
-            {isConnecting && reconnectCountdown > 0 ? (
-              <span>⏳ Connecting in {reconnectCountdown} seconds...</span>
-            ) : (
-              <span>❌ {connectionError}</span>
-            )}
-            {reconnectAttempts > 0 && !isConnecting && ` (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`}
+            <span>❌ {connectionError}</span>
           </div>
         </div>
       )}

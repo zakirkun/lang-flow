@@ -115,8 +115,8 @@ export default function CreatePlaygroundModal({ onClose, onCreate }: Props) {
               <li>• Docker-in-Docker environment</li>
               <li>• Pre-installed security tools</li>
               <li>• SSH access (root:playground)</li>
-              <li>• Web interface for file browsing</li>
-              <li>• Interactive terminal</li>
+              <li>• Web-based file manager</li>
+              <li>• File editing and management</li>
               <li>• Python, Node.js, Git, and more</li>
             </ul>
           </div>
