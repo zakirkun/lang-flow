@@ -1,24 +1,57 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import WorkflowList from './components/WorkflowList'
-import WorkflowForm from './components/WorkflowForm'
+import CreateWorkflowPage from './pages/CreateWorkflowPage'
 import WorkflowDetail from './components/WorkflowDetail'
-import Terminal from './components/Terminal'
-import Dashboard from './components/Dashboard'
 import ScanPage from './pages/ScanPage'
 import PlaygroundPage from './pages/PlaygroundPage'
-import CreateWorkflowPage from './pages/CreateWorkflowPage'
-import { Workflow } from './types'
+import Dashboard from './components/Dashboard'
+import DirectWorkflowExecution from './components/DirectWorkflowExecution'
+import type { Workflow } from './types'
+import { listWorkflows } from './api'
 
-function App() {
-  const [activeTab, setActiveTab] = useState<'home' | 'workflows' | 'create' | 'scan' | 'terminal' | 'dashboard' | 'playground'>('home')
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | undefined>(undefined)
+export default function App() {
+  const [activeTab, setActiveTab] = useState<'home' | 'workflows' | 'create' | 'scan' | 'dashboard' | 'playground'>('home')
+  const [workflows, setWorkflows] = useState<Workflow[]>([])
   const [editingWorkflow, setEditingWorkflow] = useState<Workflow | null>(null)
   const [viewingWorkflow, setViewingWorkflow] = useState<Workflow | null>(null)
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null)
+  const [executingWorkflow, setExecutingWorkflow] = useState<Workflow | null>(null)
+  const [currentRunId, setCurrentRunId] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
+  // Load workflows on component mount
+  useEffect(() => {
+    const loadWorkflows = async () => {
+      try {
+        const data = await listWorkflows()
+        setWorkflows(data)
+      } catch (error) {
+        console.error('Failed to load workflows:', error)
+      }
+    }
+    loadWorkflows()
+  }, [refreshKey])
+
   const handleRunNavigate = (workflowId: string) => {
-    setSelectedWorkflowId(workflowId)
+    const workflow = workflows.find(w => w.id === workflowId)
+    if (workflow) {
+      setExecutingWorkflow(workflow)
+    }
+  }
+
+  const handleExecutionStarted = (runId: string) => {
+    setCurrentRunId(runId)
+    setExecutingWorkflow(null)
+    // Navigate to scan page to show execution progress
+    // Pass the workflow ID, not the run ID
+    if (executingWorkflow) {
+      setSelectedWorkflowId(executingWorkflow.id)
+    }
     setActiveTab('scan')
+  }
+
+  const handleExecutionCancel = () => {
+    setExecutingWorkflow(null)
   }
 
   const handleCreateWorkflow = () => {
@@ -63,7 +96,6 @@ function App() {
     { id: 'workflows', label: '⚡ Workflows', icon: '🔧' },
     { id: 'create', label: '✨ Create', icon: '✨' },
     { id: 'scan', label: '🔍 Scan', icon: '🎯' },
-    { id: 'terminal', label: '💻 Terminal', icon: '⌨️' },
     { id: 'playground', label: '🐳 Playground', icon: '🎮' },
     { id: 'dashboard', label: '📊 Dashboard', icon: '📈' }
   ] as const
@@ -131,13 +163,6 @@ function App() {
             description: 'Isolated Docker-in-Docker environments for safe testing and experimentation with security tools.',
             color: 'from-purple-500 to-pink-500',
             action: () => setActiveTab('playground')
-          },
-          {
-            icon: '💻',
-            title: 'Interactive Terminal',
-            description: 'Full-featured web terminal with command history, auto-completion, and real-time execution.',
-            color: 'from-yellow-500 to-orange-500',
-            action: () => setActiveTab('terminal')
           },
           {
             icon: '📊',
@@ -341,20 +366,7 @@ function App() {
         )}
 
         {activeTab === 'scan' && (
-          <ScanPage workflowId={selectedWorkflowId} />
-        )}
-
-        {activeTab === 'terminal' && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-4 border border-slate-800 rounded-lg bg-cyber-panel/20">
-              <span className="text-2xl">💻</span>
-              <div>
-                <h2 className="text-xl font-semibold text-cyber-neonYellow">Interactive Terminal</h2>
-                <p className="text-sm text-gray-400">Execute commands in real-time</p>
-              </div>
-            </div>
-            <Terminal />
-          </div>
+          <ScanPage workflowId={selectedWorkflowId || undefined} />
         )}
 
         {activeTab === 'playground' && (
@@ -375,6 +387,15 @@ function App() {
         )}
       </div>
 
+      {/* Direct Workflow Execution Modal */}
+      {executingWorkflow && (
+        <DirectWorkflowExecution
+          workflow={executingWorkflow}
+          onExecutionStarted={handleExecutionStarted}
+          onClose={handleExecutionCancel}
+        />
+      )}
+
       {/* Footer */}
       <div className="border-t border-slate-800 bg-cyber-panel/20 backdrop-blur mt-12">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -394,6 +415,4 @@ function App() {
       </div>
     </div>
   )
-}
-
-export default App 
+} 

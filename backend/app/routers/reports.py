@@ -11,7 +11,6 @@ from ..services.storage import load_run
 
 router = APIRouter()
 
-
 @router.post("/generate/{run_id}")
 async def generate_report(run_id: str) -> Dict[str, Any]:
     """Generate a formal PDF report for a specific run"""

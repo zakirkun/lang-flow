@@ -97,6 +97,20 @@ class RunResult(BaseModel):
     finished_at: Optional[datetime] = None
     context: Dict[str, Any] = Field(default_factory=dict)
     logs: List[StepLog] = Field(default_factory=list)
+    playground_instance_id: Optional[str] = None
+
+
+class WorkflowExecutionRequest(BaseModel):
+    workflow_id: str
+    playground_instance_id: Optional[str] = None
+    context: Optional[Dict[str, Any]] = None
+
+
+class StreamEvent(BaseModel):
+    type: str
+    run_id: str
+    timestamp: str
+    data: Dict[str, Any]
 
 
 # Virtual Playground Models
@@ -111,7 +125,6 @@ class PlaygroundInstance(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     expires_at: datetime
     last_activity: datetime = Field(default_factory=datetime.utcnow)
-    terminal_sessions: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     environment: Dict[str, str] = Field(default_factory=dict)
     resource_limits: Dict[str, Any] = Field(default_factory=dict)
 
@@ -120,14 +133,6 @@ class PlaygroundCommand(BaseModel):
     command: str
     working_dir: Optional[str] = None
     environment: Optional[Dict[str, str]] = None
-
-
-class PlaygroundTerminalSession(BaseModel):
-    session_id: str
-    instance_id: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    last_activity: datetime = Field(default_factory=datetime.utcnow)
-    status: Literal["active", "inactive", "closed"] = "active"
 
 
 class PlaygroundStats(BaseModel):
@@ -139,3 +144,10 @@ class PlaygroundStats(BaseModel):
     network_tx: int
     uptime: int
     containers_count: int 
+
+class CreateDirectoryRequest(BaseModel):
+    dir_path: str
+
+class UploadFileRequest(BaseModel):
+    file_path: str
+    content: str

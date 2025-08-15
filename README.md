@@ -35,7 +35,14 @@ LangFlow is a cutting-edge cybersecurity automation platform that combines the p
 - **Cross-Platform**: Windows PowerShell and Unix shell support
 - **Timeout Control**: Configurable execution timeouts per step
 
-#### 🐳 **Virtual Playground (NEW!)**
+#### 🔧 **Input Variables & Dynamic Workflows (NEW!)**
+- **User-Defined Variables**: Create custom input variables like `target_ip`, `domain_name`
+- **Template Integration**: Pre-configured variables in workflow templates
+- **Dynamic Substitution**: Use variables in commands, AI prompts, and reports
+- **Runtime Input**: Users can modify variables when executing workflows
+- **Validation System**: Comprehensive form validation with real-time feedback
+
+#### 🐳 **Virtual Playground (DIND)**
 - **Docker-in-Docker (DIND)**: Isolated containerized environments for safe testing
 - **Interactive Web Terminal**: Full xterm.js-powered terminal with Linux shell
 - **Pre-installed Security Tools**: nmap, tcpdump, netcat, iptables, curl, wget, git, python3, nodejs
@@ -55,9 +62,10 @@ LangFlow is a cutting-edge cybersecurity automation platform that combines the p
 - **Real-Time Preview**: Visual representation of workflow execution
 - **Step Dependencies**: Define execution order and relationships
 - **Template Library**: Pre-built workflows for common scenarios
+- **Enhanced Form Experience**: Improved input handling with focus management
 
 #### 📊 **Real-Time Monitoring**
-- **Live Execution Logs**: WebSocket-powered real-time updates
+- **Live Execution Logs**: Server-Sent Events (SSE) for real-time updates
 - **Progress Tracking**: Visual indicators for step completion
 - **Interactive Terminal**: Full web-based TTY for manual operations
 - **Execution History**: Complete audit trail of all runs
@@ -92,18 +100,20 @@ graph TB
     
     B --> B1["🛠️ WorkflowForm"]
     B --> B2["🎨 Visual Builder"]
-    B1 --> B3["⚡ Command Steps"]
-    B1 --> B4["🤖 AI Steps"]
-    B1 --> B5["📧 Report Steps"]
-    B3 --> B6["📥 Input Variables"]
-    B4 --> B6
-    B5 --> B6
+    B --> B3["📥 Input Variables"]
+    B1 --> B4["⚡ Command Steps"]
+    B1 --> B5["🤖 AI Steps"]
+    B1 --> B6["📧 Report Steps"]
+    B3 --> B7["🔧 Dynamic Templates"]
+    B4 --> B7
+    B5 --> B7
+    B6 --> B7
     
     C --> C1["🏃 Workflow Engine"]
     C1 --> C2["⚡ Command Execution"]
     C1 --> C3["🤖 AI Processing"]
     C1 --> C4["📧 Multi-channel Delivery"]
-    C2 --> C5["📊 Real-time Updates"]
+    C2 --> C5["📊 Real-time Updates (SSE)"]
     C3 --> C5
     C4 --> C5
     
@@ -126,7 +136,7 @@ graph TB
     F3 --> F6["📈 Real-time Stats"]
     F4 --> F7["🔧 Pre-installed Tools"]
     
-    B6 --> C1
+    B7 --> C1
     C5 --> D1
     E4 --> C1
     F5 --> C1
@@ -144,16 +154,18 @@ graph TB
 
 ```mermaid
 flowchart LR
-    A[📝 Create Workflow] --> B[⚡ Execute Steps]
-    B --> C[📊 Monitor Progress]
-    C --> D[📄 Generate Report]
-    D --> E[📥 Download PDF]
+    A[📝 Create Workflow] --> B[📥 Configure Variables]
+    B --> C[⚡ Execute Steps]
+    C --> D[📊 Monitor Progress]
+    D --> E[📄 Generate Report]
+    E --> F[📥 Download PDF]
     
     style A fill:#ec4899,stroke:#ec4899,color:#fff
-    style B fill:#10b981,stroke:#10b981,color:#fff
-    style C fill:#06b6d4,stroke:#06b6d4,color:#fff
-    style D fill:#f59e0b,stroke:#f59e0b,color:#fff
-    style E fill:#8b5cf6,stroke:#8b5cf6,color:#fff
+    style B fill:#f59e0b,stroke:#f59e0b,color:#fff
+    style C fill:#10b981,stroke:#10b981,color:#fff
+    style D fill:#06b6d4,stroke:#06b6d4,color:#fff
+    style E fill:#f59e0b,stroke:#f59e0b,color:#fff
+    style F fill:#8b5cf6,stroke:#8b5cf6,color:#fff
 ```
 
 ## 🏗️ **Architecture**
@@ -165,12 +177,13 @@ flowchart LR
 - **React Flow** for visual workflow building
 - **xterm.js** for web-based terminal emulation
 - **Recharts** for data visualization
+- **Server-Sent Events (SSE)** for real-time updates
 
 ### **Backend Stack**
 - **FastAPI** for high-performance async API
 - **LangChain** for AI model orchestration
 - **OpenAI API** integration with multiple model support
-- **WebSocket** support for real-time communication
+- **Server-Sent Events (SSE)** for real-time communication
 - **Pydantic** for robust data validation
 - **Docker Engine** for containerized virtual environments
 - **Docker-in-Docker (DIND)** for isolated playground instances
@@ -184,6 +197,7 @@ flowchart LR
 - **Security**: Environment-based configuration
 - **PDF Generation**: `reportlab` for enterprise-ready reports
 - **Terminal Enhancement**: `@xterm/addon-fit` for responsive terminal
+- **Real-time Updates**: Server-Sent Events (SSE) for streaming data
 
 ---
 
@@ -267,9 +281,10 @@ npm run dev
 ### **🎬 Platform Overview**
 - 🚀 **Dashboard**: Cyberpunk-themed interface with real-time statistics
 - 🛠️ **Workflow Builder**: Visual drag-and-drop workflow creation
-- 📊 **Execution Monitor**: Live progress tracking with WebSocket updates
+- 📊 **Execution Monitor**: Live progress tracking with SSE updates
 - 🖥️ **Interactive Terminal**: Full-featured web terminal with command history
 - 📄 **AI Reports**: Professional PDF generation with ChatGPT analysis
+- 📥 **Input Variables**: Dynamic workflow configuration with user-defined variables
 
 ### **🔗 Live Demo**
 > 🚧 **Coming Soon**: Interactive demo environment with sample workflows
@@ -280,12 +295,21 @@ npm run dev
 │ • Dark theme with neon accent colors                  │
 │ • Responsive design for all screen sizes              │
 │ • Smooth animations and glowing effects               │
+│ • Enhanced form experience with focus management      │
 └────────────────────────────────────────────────────────┘
 
 ┌─ 🤖 AI Integration ────────────────────────────────────┐
 │ • ChatGPT-4o powered analysis and decision making     │
 │ • Dynamic prompt templating with variables            │
 │ • Intelligent report generation and summarization     │
+│ • Input variable support in AI prompts                │
+└────────────────────────────────────────────────────────┘
+
+┌─ 📥 Input Variables ──────────────────────────────────┐
+│ • User-defined variables (target_ip, domain_name)     │
+│ • Template pre-configuration                          │
+│ • Dynamic substitution in all step types              │
+│ • Runtime modification during execution               │
 └────────────────────────────────────────────────────────┘
 
 ┌─ 📊 Professional Reports ──────────────────────────────┐
@@ -303,42 +327,46 @@ npm run dev
 ### **1. Create Your First Workflow**
 
 #### **Using Templates**
-Choose from pre-built templates:
-- 🔍 **Basic Reconnaissance**: Subdomain discovery + port scanning
-- 🌐 **Web Application Testing**: Directory fuzzing + vulnerability analysis  
-- 🔗 **Network Assessment**: Network discovery + service enumeration
+Choose from pre-built templates with pre-configured input variables:
+- 🔍 **Basic Reconnaissance**: `target_domain` variable for subdomain discovery
+- 🌐 **Web Application Testing**: `target_ip` and `target_url` variables for scanning
+- 🔗 **Network Assessment**: `network_range` and `target_hosts` variables for enumeration
 
-#### **Custom Workflow**
+#### **Custom Workflow with Input Variables**
 1. Click "Create Workflow"
-2. Add steps using the step buttons:
+2. **Configure Input Variables**:
+   - Add variables like `target_ip`, `domain_name`, `port_range`
+   - Set default values for testing
+   - Variables are available in all step types
+3. Add steps using the step buttons:
    - 🤖 **AI Step**: For intelligent analysis and decision making
    - ⚡ **Command Step**: For executing security tools
    - 📧 **Report Step**: For sending results via email/Telegram/Slack
 
-### **2. Configure Workflow Steps**
+### **2. Configure Workflow Steps with Variables**
 
-#### **AI Steps**
+#### **AI Steps with Variables**
 ```yaml
 Name: Vulnerability Analysis
-Prompt: "Analyze the nmap results and identify critical vulnerabilities in {target}"
+Prompt: "Analyze the nmap results and identify critical vulnerabilities in {target_ip}"
 Model: GPT-4o-mini
-Variables: {target}, {nmap_results}
+Variables: {target_ip}, {nmap_results}
 ```
 
-#### **Command Steps**
+#### **Command Steps with Variables**
 ```yaml
 Name: Port Scan
-Command: "nmap -sV -sC {target}"
+Command: "nmap -sV -sC {target_ip} -p {port_range}"
 Timeout: 300 seconds
-Variables: {target}
+Variables: {target_ip}, {port_range}
 ```
 
-#### **Report Steps**
+#### **Report Steps with Variables**
 ```yaml
 Name: Send Security Report
-Subject: "Security Assessment - {target}"
+Subject: "Security Assessment - {target_ip}"
 Template: |
-  Security scan completed for {target}
+  Security scan completed for {target_ip}
   
   Findings:
   {Vulnerability Analysis}
@@ -353,9 +381,10 @@ Channels:
 ### **3. Execute & Monitor**
 
 1. **Start Execution**: Click "Run" to begin workflow
-2. **Real-Time Monitoring**: Watch live logs and progress
-3. **Interactive Terminal**: Access web TTY for manual commands
-4. **View Results**: Check execution history and reports
+2. **Input Variables**: Modify variable values before execution (optional)
+3. **Real-Time Monitoring**: Watch live logs and progress via SSE
+4. **Interactive Terminal**: Access web TTY for manual commands
+5. **View Results**: Check execution history and reports
 
 ### **4. Virtual Playground Usage**
 
@@ -428,14 +457,18 @@ lang-flow/
 │   │   ├── 📁 components/       # Reusable UI components
 │   │   │   ├── WorkflowForm.tsx    # Workflow creation/editing
 │   │   │   ├── WorkflowViewer.tsx  # Read-only workflow display
-│   │   │   ├── RunView.tsx         # Real-time execution logs
+│   │   │   ├── RunView.tsx         # Real-time execution logs (SSE)
 │   │   │   ├── Dashboard.tsx       # Analytics & statistics
 │   │   │   ├── Terminal.tsx        # Web-based terminal
 │   │   │   ├── WorkflowBuilder.tsx # Visual node editor
 │   │   │   ├── PlaygroundTerminal.tsx # Virtual playground terminal
-│   │   │   └── PlaygroundInstanceCard.tsx # Playground instance display
+│   │   │   ├── PlaygroundInstanceCard.tsx # Playground instance display
+│   │   │   ├── DirectWorkflowExecution.tsx # Direct workflow execution modal
+│   │   │   ├── PlaygroundSelector.tsx # Playground instance selector
+│   │   │   └── StreamingResponse.tsx # SSE response display
 │   │   ├── 📁 pages/            # Page components
 │   │   │   ├── ScanPage.tsx        # Consolidated scan interface
+│   │   │   ├── CreateWorkflowPage.tsx # Enhanced workflow creation with input variables
 │   │   │   └── PlaygroundPage.tsx  # Virtual playground management
 │   │   ├── 📁 types/            # TypeScript definitions
 │   │   └── 📁 api/              # API client functions
@@ -446,8 +479,7 @@ lang-flow/
 │   │   ├── 📁 models/           # Pydantic data models
 │   │   ├── 📁 routers/          # API route handlers
 │   │   │   ├── workflows.py        # Workflow CRUD operations
-│   │   │   ├── runs.py            # Execution & WebSocket endpoints
-│   │   │   ├── terminal.py        # Interactive terminal WebSocket
+│   │   │   ├── runs.py            # Execution & SSE endpoints
 │   │   │   ├── playground.py      # Virtual playground management
 │   │   │   └── reports.py         # PDF report generation endpoints
 │   │   └── 📁 services/         # Business logic
@@ -458,7 +490,7 @@ lang-flow/
 │   │       ├── report_generator.py # AI-powered PDF generation
 │   │       ├── playground_service.py # Docker playground management
 │   │       ├── storage.py         # Data persistence
-│   │       └── realtime.py        # WebSocket management
+│   │       └── streaming.py       # SSE management
 │   ├── 📁 data/                 # Data storage
 │   │   ├── workflows.json          # Workflow definitions
 │   │   ├── playground.json         # Playground instances
@@ -482,6 +514,7 @@ LangFlow features a custom cyberpunk-inspired design with:
 - **Typography**: Share Tech Mono font for that authentic hacker aesthetic
 - **Animations**: Pulsing indicators, glowing shadows, and smooth transitions
 - **Visual Effects**: Gradient backgrounds and neon glow effects
+- **Enhanced Forms**: Improved input handling with focus management and validation
 
 ---
 
@@ -542,33 +575,45 @@ TLS: Enabled
 - **Network Access**: Be cautious when running on production networks.
 - **Input Validation**: Always validate and sanitize inputs from external sources.
 - **Audit Trail**: All executions are logged for security auditing.
+- **Variable Security**: Input variables are validated and sanitized before execution.
 
 ---
 
 ## 🔮 **Advanced Features**
 
-### **Variable Templating**
-Use dynamic variables in any step:
+### **Input Variables & Dynamic Templating**
+Create dynamic workflows with user-defined variables:
 ```yaml
-# Reference previous steps
-Command: "nmap -sV {target} | grep {Port Scan}"
+# Define input variables
+Input Variables:
+  target_ip: 192.168.1.1
+  domain_name: example.com
+  port_range: 1-1000
 
-# Use workflow metadata  
-Subject: "Report for {workflow_name} - {target}"
+# Use in commands
+Command: "nmap -sV -sC {target_ip} -p {port_range}"
 
-# Access execution context
-Template: "Scan completed at {started_at} for {target}"
+# Use in AI prompts
+Prompt: "Analyze scan results for {domain_name} and identify vulnerabilities"
+
+# Use in reports
+Subject: "Security Assessment - {target_ip}"
+Template: "Scan completed for {domain_name} at {started_at}"
 ```
 
-### **WebSocket Real-Time Updates**
+### **Server-Sent Events (SSE) Real-Time Updates**
 ```javascript
-// Frontend automatically connects to WebSocket for live updates
-ws://localhost:8000/api/runs/ws/{run_id}
+// Frontend automatically connects to SSE for live updates
+GET /api/runs/stream/{run_id}
 
 // Receives real-time events:
-// - run_started
-// - log (step progress)
-// - run_finished
+// - connected: Initial connection established
+// - step_progress: Step execution updates
+// - log: Real-time log streaming
+// - run_started: Workflow execution begins
+// - run_finished: Workflow execution completes
+// - error: Error notifications
+// - heartbeat: Connection health monitoring
 ```
 
 ### **CSV Data Processing**
@@ -603,10 +648,14 @@ Generate professional security reports with ChatGPT analysis:
 ## 🚧 **Roadmap**
 
 ### **✅ Recently Completed**
+- [x] **Input Variables System**: User-defined variables for dynamic workflows
+- [x] **Enhanced Form Experience**: Improved input handling with focus management
+- [x] **Server-Sent Events (SSE)**: Replaced WebSockets with SSE for real-time updates
+- [x] **Form Validation**: Comprehensive validation with real-time feedback
+- [x] **Template Integration**: Pre-configured input variables in workflow templates
 - [x] **AI-Powered Report Generation**: ChatGPT integration for professional PDF reports
 - [x] **Markdown Processing**: Rich formatting support for AI-generated content
 - [x] **Enhanced Terminal UI**: Full-featured web terminal with command history
-- [x] **Input Variable Management**: Dynamic variable support for all step types
 - [x] **Visual Workflow Details**: Read-only workflow visualization with graph display
 - [x] **Run History & Analytics**: Comprehensive execution tracking and reporting
 
@@ -649,6 +698,7 @@ We welcome contributions! Here's how to get started:
 - Maintain cyberpunk theme consistency
 - Add comprehensive error handling
 - Write clear documentation
+- Use functional state updates to prevent focus issues
 
 ---
 
@@ -659,6 +709,45 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ## 📚 **API Documentation**
+
+### **Real-Time Execution Updates (SSE)**
+
+#### **Stream Execution Events**
+```http
+GET /api/runs/stream/{run_id}
+```
+Stream real-time execution updates via Server-Sent Events.
+
+**Event Types:**
+```json
+{
+  "type": "connected",
+  "run_id": "run_123",
+  "timestamp": "2024-12-12T14:30:22",
+  "data": {}
+}
+
+{
+  "type": "step_progress",
+  "run_id": "run_123",
+  "timestamp": "2024-12-12T14:30:22",
+  "data": {
+    "step_id": "step_1",
+    "status": "running",
+    "output": "Starting port scan..."
+  }
+}
+
+{
+  "type": "log",
+  "run_id": "run_123",
+  "timestamp": "2024-12-12T14:30:22",
+  "data": {
+    "step_id": "step_1",
+    "message": "Port 80 is open"
+  }
+}
+```
 
 ### **Report Generation Endpoints**
 
@@ -716,6 +805,20 @@ Get all available reports with metadata.
 
 ## 🛠️ **Troubleshooting**
 
+### **Form Input Issues**
+
+#### **Input Losing Focus**
+If input fields lose focus while typing:
+- **Cause**: State updates causing unnecessary re-renders
+- **Solution**: Use functional state updates (`setState(prev => ({ ...prev, value }))`)
+- **Status**: ✅ Fixed in latest version
+
+#### **Input Variables Not Saving**
+If input variables are not being saved:
+- **Cause**: Missing inputs property in workflow data
+- **Solution**: Ensure workflow includes `inputs: {}` property
+- **Status**: ✅ Fixed in latest version
+
 ### **Virtual Playground Issues**
 
 #### **Docker Not Available**
@@ -743,7 +846,7 @@ docker images
 ```
 
 #### **Terminal Connection Issues**
-- **WebSocket Errors**: Check browser console for connection details
+- **SSE Errors**: Check browser console for connection details
 - **Container Not Ready**: Wait for status to change from "installing" to "running"
 - **Port Conflicts**: Ensure no other services are using playground ports
 - **Firewall Issues**: Check if ports 10000+ are accessible
@@ -787,17 +890,13 @@ pip install -r requirements.txt --force-reinstall
 
 For detailed version history and release notes, see [CHANGELOG.md](CHANGELOG.md).
 
-### **🆕 Latest Release: v2.1.0 - Virtual Playground** 
-- 🐳 **NEW**: Docker-in-Docker virtual playground environments
-- 🖥️ **NEW**: Interactive web terminal with security tools
-- 📊 **NEW**: Real-time resource monitoring and stats
-- 🔧 **IMPROVED**: Enhanced WebSocket communication and error handling
-- 🛡️ **IMPROVED**: Better container security and isolation
-
-### **Previous Releases**
-- **v2.0.0**: AI-powered PDF reports with ChatGPT analysis
-- **v1.5.0**: Enhanced UX with cyberpunk theme and drag-and-drop
-- **v1.0.0**: Initial release with core workflow automation
+### **🆕 Latest Release: v2.2.0 - Input Variables & Enhanced UX** 
+- 📥 **NEW**: Input Variables system for dynamic workflows
+- 🔧 **NEW**: Enhanced form experience with focus management
+- 📡 **NEW**: Server-Sent Events (SSE) for real-time updates
+- ✅ **IMPROVED**: Comprehensive form validation with real-time feedback
+- 🎨 **IMPROVED**: Better UI/UX with cyberpunk theme consistency
+- 🐛 **FIXED**: Input focus issues and form state management
 
 ---
 

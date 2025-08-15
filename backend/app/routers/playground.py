@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Body, Response
+from fastapi import APIRouter, HTTPException, Body, Response
 from pydantic import BaseModel
 import asyncio
 import json
@@ -7,7 +7,7 @@ import logging
 import uuid
 from datetime import datetime
 
-from ..models import PlaygroundInstance, PlaygroundStats, PlaygroundCommand, PlaygroundTerminalSession
+from ..models import PlaygroundInstance, PlaygroundStats, PlaygroundCommand, CreateDirectoryRequest,UploadFileRequest
 from ..services.playground_service import playground_service
 
 router = APIRouter()
@@ -25,9 +25,6 @@ class PlaygroundResponse(BaseModel):
     status: str
     message: str
     data: Optional[dict] = None
-
-# Active terminal sessions - keeping for backward compatibility but not used by file manager
-active_sessions: dict = {}
 
 @router.get("/", response_model=List[PlaygroundInstance])
 async def list_instances():
@@ -165,7 +162,7 @@ async def get_instance_stats(instance_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{instance_id}/files")
-async def upload_file(instance_id: str, file_path: str = Body(...), content: str = Body(...)):
+async def upload_file(instance_id: str, request: UploadFileRequest):
     """Upload a file to the playground instance"""
     try:
         instance = playground_service.get_instance(instance_id)
@@ -175,7 +172,7 @@ async def upload_file(instance_id: str, file_path: str = Body(...), content: str
         container = playground_service.client.containers.get(instance.container_id)
         
         # Create file in container
-        command = f"cat > {file_path} << 'EOF'\n{content}\nEOF"
+        command = f"echo -e '{request.content}' > {request.file_path}"
         result = container.exec_run(command, workdir="/playground")
         
         if result.exit_code != 0:
@@ -183,7 +180,7 @@ async def upload_file(instance_id: str, file_path: str = Body(...), content: str
         
         return PlaygroundResponse(
             status="success",
-            message=f"File {file_path} uploaded successfully"
+            message=f"File {request.file_path} uploaded successfully"
         )
         
     except Exception as e:
@@ -267,7 +264,7 @@ async def delete_file(instance_id: str, file_path: str = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{instance_id}/files/mkdir")
-async def create_directory(instance_id: str, dir_path: str = Body(...)):
+async def create_directory(instance_id: str, request: CreateDirectoryRequest):
     """Create a directory in the playground instance"""
     try:
         instance = playground_service.get_instance(instance_id)
@@ -277,14 +274,14 @@ async def create_directory(instance_id: str, dir_path: str = Body(...)):
         container = playground_service.client.containers.get(instance.container_id)
         
         # Create directory
-        result = container.exec_run(f"mkdir -p {dir_path}", workdir="/")
+        result = container.exec_run(f"mkdir -p {request.dir_path}", workdir="/")
         
         if result.exit_code != 0:
             raise HTTPException(status_code=500, detail=f"Failed to create directory: {result.output.decode()}")
         
         return PlaygroundResponse(
             status="success",
-            message=f"Directory {dir_path} created successfully"
+            message=f"Directory {request.dir_path} created successfully"
         )
         
     except Exception as e:

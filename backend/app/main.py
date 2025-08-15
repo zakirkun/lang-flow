@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 
-from .routers import workflows, runs, terminal, playground
+from .routers import workflows, runs, playground, reports
 
 # Load environment variables
 load_dotenv()
@@ -41,8 +41,8 @@ runs_dir.mkdir(exist_ok=True)
 # Include routers
 app.include_router(workflows.router, prefix="/api/workflows", tags=["workflows"])
 app.include_router(runs.router, prefix="/api/runs", tags=["runs"])
-app.include_router(terminal.router, prefix="/api/terminal", tags=["terminal"])
 app.include_router(playground.router, prefix="/api/playground", tags=["playground"])
+app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
 
 @app.get("/")
 async def root():
@@ -54,7 +54,6 @@ async def root():
             "Command Execution",
             "Report Generation", 
             "Real-time Logs",
-            "Interactive Terminal",
             "Virtual Playground"
         ]
     }

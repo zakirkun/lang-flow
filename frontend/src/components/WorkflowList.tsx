@@ -79,6 +79,13 @@ export default function WorkflowList({ onCreate, onEdit, onRun, onView }: Props)
               
               <div className="flex flex-col sm:flex-row gap-2 shrink-0">
                 <button 
+                  className="px-3 py-1 text-sm rounded border border-cyber-neonGreen bg-cyber-neonGreen/20 text-cyber-neonGreen hover:bg-cyber-neonGreen hover:text-cyber-bg hover:shadow-neonGreen transition-all font-medium" 
+                  onClick={() => onRun(wf.id)}
+                  title="Run workflow directly with playground selection"
+                >
+                  🚀 Run Now
+                </button>
+                <button 
                   className="px-3 py-1 text-sm rounded border border-slate-700 bg-cyber-panel/60 text-cyber-neonCyan hover:shadow-neonCyan transition-all" 
                   onClick={() => onView(wf)}
                   title="View workflow details"
@@ -91,13 +98,6 @@ export default function WorkflowList({ onCreate, onEdit, onRun, onView }: Props)
                   title="Edit workflow"
                 >
                   ✏️ Edit
-                </button>
-                <button 
-                  className="px-3 py-1 text-sm rounded border border-slate-700 bg-cyber-panel/60 text-cyber-neonGreen hover:shadow-neonGreen transition-all" 
-                  onClick={() => onRun(wf.id)}
-                  title="Run workflow"
-                >
-                  ▶️ Run
                 </button>
                 <button 
                   className="px-3 py-1 text-sm rounded border border-red-800 bg-cyber-panel/60 text-cyber-neonPink hover:shadow-neonPink transition-all" 

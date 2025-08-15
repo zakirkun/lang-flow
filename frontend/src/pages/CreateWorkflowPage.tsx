@@ -14,6 +14,9 @@ const WORKFLOW_TEMPLATES = [
     estimatedTime: '15-30 minutes',
     icon: '🔍',
     color: 'from-blue-500 to-cyan-500',
+    inputs: {
+      target_domain: 'example.com'
+    },
     steps: [
       {
         id: 'domain-info',
@@ -53,6 +56,10 @@ const WORKFLOW_TEMPLATES = [
     estimatedTime: '45-60 minutes',
     icon: '🌐',
     color: 'from-green-500 to-emerald-500',
+    inputs: {
+      target_ip: '192.168.1.1',
+      target_url: 'https://example.com'
+    },
     steps: [
       {
         id: 'port-scan',
@@ -101,6 +108,10 @@ const WORKFLOW_TEMPLATES = [
     estimatedTime: '60-90 minutes',
     icon: '🔒',
     color: 'from-purple-500 to-pink-500',
+    inputs: {
+      network_range: '192.168.1.0/24',
+      target_hosts: '192.168.1.1-254'
+    },
     steps: [
       {
         id: 'network-discovery',
@@ -149,6 +160,7 @@ const WORKFLOW_TEMPLATES = [
     estimatedTime: 'Variable',
     icon: '⚡',
     color: 'from-yellow-500 to-orange-500',
+    inputs: {},
     steps: []
   }
 ]
@@ -297,7 +309,7 @@ export default function CreateWorkflowPage({ workflowId, onBack, onSave }: Props
           <input
             type="text"
             value={workflow.name || ''}
-            onChange={(e) => setWorkflow({ ...workflow, name: e.target.value })}
+            onChange={(e) => setWorkflow(prev => ({ ...prev, name: e.target.value }))}
             placeholder={selectedTemplate ? `My ${selectedTemplate.name}` : 'Enter workflow name'}
             className="w-full px-4 py-3 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 placeholder-gray-500 focus:border-cyber-neonCyan focus:ring-1 focus:ring-cyber-neonCyan focus:outline-none transition-colors"
           />
@@ -310,21 +322,103 @@ export default function CreateWorkflowPage({ workflowId, onBack, onSave }: Props
           </label>
           <textarea
             value={workflow.description || ''}
-            onChange={(e) => setWorkflow({ ...workflow, description: e.target.value })}
+            onChange={(e) => setWorkflow(prev => ({ ...prev, description: e.target.value }))}
             placeholder="Describe what this workflow does and when to use it..."
             rows={4}
             className="w-full px-4 py-3 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 placeholder-gray-500 focus:border-cyber-neonGreen focus:ring-1 focus:ring-cyber-neonGreen focus:outline-none transition-colors resize-none"
           />
         </div>
 
+        {/* Input Variables Section */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Input Variables
+          </label>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-400">
+              Define variables that users can input when running this workflow (e.g., target_ip, domain_name)
+            </p>
+            <div className="space-y-2">
+              {workflow.inputs && Object.keys(workflow.inputs).length > 0 ? (
+                Object.entries(workflow.inputs).map(([key, value]) => (
+                  <div key={key} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={key}
+                      onChange={(e) => {
+                        const newKey = e.target.value
+                        if (newKey !== key) {
+                          const newInputs = { ...(workflow.inputs || {}) }
+                          delete newInputs[key]
+                          newInputs[newKey] = value
+                          setWorkflow(prev => ({ ...prev, inputs: newInputs }))
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const newKey = e.target.value.trim()
+                        if (newKey && newKey !== key) {
+                          const newInputs = { ...(workflow.inputs || {}) }
+                          delete newInputs[key]
+                          newInputs[newKey] = value
+                          setWorkflow(prev => ({ ...prev, inputs: newInputs }))
+                        }
+                      }}
+                      placeholder="Variable name"
+                      className="flex-1 px-3 py-2 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 text-sm focus:border-cyber-neonYellow focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      value={String(value || '')}
+                      onChange={(e) => {
+                        const newValue = e.target.value
+                        setWorkflow(prev => ({
+                          ...prev,
+                          inputs: { ...(prev.inputs || {}), [key]: newValue }
+                        }))
+                      }}
+                      placeholder="Default value"
+                      className="flex-1 px-3 py-2 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 text-sm focus:border-cyber-neonYellow focus:outline-none"
+                    />
+                    <button
+                      onClick={() => {
+                        const newInputs = { ...(workflow.inputs || {}) }
+                        delete newInputs[key]
+                        setWorkflow(prev => ({ ...prev, inputs: newInputs }))
+                      }}
+                      className="px-3 py-2 text-red-400 hover:text-red-300 transition-colors"
+                      title="Remove variable"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 italic">No input variables defined yet</p>
+              )}
+              <button
+                onClick={() => {
+                  const newKey = `var_${Date.now()}`
+                  setWorkflow(prev => ({
+                    ...prev,
+                    inputs: { ...(prev.inputs || {}), [newKey]: '' }
+                  }))
+                }}
+                className="px-3 py-2 border border-cyber-neonYellow/30 bg-cyber-neonYellow/10 text-cyber-neonYellow rounded-lg hover:bg-cyber-neonYellow/20 transition-colors text-sm"
+              >
+                ➕ Add Input Variable
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Auto-fill suggestion */}
         {selectedTemplate && selectedTemplate.id !== 'custom-workflow' && !workflow.name && (
           <button
-            onClick={() => setWorkflow({
-              ...workflow,
+            onClick={() => setWorkflow(prev => ({
+              ...prev,
               name: selectedTemplate.name,
               description: selectedTemplate.description
-            })}
+            }))}
             className="w-full px-4 py-2 border border-cyber-neonYellow/30 bg-cyber-neonYellow/10 text-cyber-neonYellow rounded-lg hover:bg-cyber-neonYellow/20 transition-colors text-sm"
           >
             ✨ Use template defaults
@@ -340,6 +434,26 @@ export default function CreateWorkflowPage({ workflowId, onBack, onSave }: Props
       <div className="text-center">
         <h2 className="text-2xl font-bold text-cyber-neonCyan mb-2">Build Your Workflow</h2>
         <p className="text-gray-400">Configure the steps and flow of your workflow</p>
+      </div>
+
+      {/* Helpful Guidance */}
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-cyber-neonCyan/10 border border-cyber-neonCyan/30 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <span className="text-cyber-neonCyan text-lg">💡</span>
+            <div className="text-sm text-gray-300">
+              <p className="font-medium mb-2">Workflow Building Tips:</p>
+              <ul className="space-y-1 text-gray-400">
+                <li>• <strong>AI Steps:</strong> Provide clear, specific prompts for best results</li>
+                <li>• <strong>Command Steps:</strong> Use variables like {'{target_ip}'} for dynamic values</li>
+                <li>• <strong>Report Steps:</strong> Configure output channels for results delivery</li>
+                <li>• <strong>Step Names:</strong> Use descriptive names that explain what each step does</li>
+                <li>• <strong>Input Variables:</strong> Define variables like target_ip, domain_name for user input</li>
+                <li>• <strong>Validation:</strong> All required fields must be filled before saving</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
       <WorkflowForm 
@@ -379,6 +493,21 @@ export default function CreateWorkflowPage({ workflowId, onBack, onSave }: Props
               <p className="text-gray-200">{workflow.steps?.length || 0} configured</p>
             </div>
 
+            {workflow.inputs && Object.keys(workflow.inputs).length > 0 && (
+              <div>
+                <label className="text-sm text-gray-400">Input Variables</label>
+                <p className="text-gray-200">{Object.keys(workflow.inputs).length} defined</p>
+                <div className="mt-2 space-y-1">
+                  {Object.entries(workflow.inputs).map(([key, value]) => (
+                    <div key={key} className="text-xs text-gray-400">
+                      <span className="text-cyber-neonYellow">{key}</span>
+                      {value && <span className="text-gray-500"> = {String(value)}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {selectedTemplate && selectedTemplate.id !== 'custom-workflow' && (
               <div>
                 <label className="text-sm text-gray-400">Based on Template</label>
@@ -394,27 +523,49 @@ export default function CreateWorkflowPage({ workflowId, onBack, onSave }: Props
           
           <div className="space-y-3">
             {workflow.steps && workflow.steps.length > 0 ? (
-              workflow.steps.map((step, index) => (
-                <div key={step.id} className="flex items-center gap-3 p-3 bg-slate-800/30 rounded-lg">
-                  <div className="w-6 h-6 bg-cyber-neonCyan rounded-full flex items-center justify-center text-xs text-cyber-bg font-bold">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-gray-200 font-medium">{step.name}</p>
-                    <p className="text-xs text-gray-400">
-                      {step.type === 'ai' ? '🤖 AI Step' : 
-                       step.type === 'command' ? '💻 Command' : '📧 Report'}
-                    </p>
-                  </div>
-                  <div className={`px-2 py-1 rounded text-xs ${
-                    step.type === 'ai' ? 'bg-blue-900 text-blue-400' :
-                    step.type === 'command' ? 'bg-green-900 text-green-400' :
-                    'bg-purple-900 text-purple-400'
+              workflow.steps.map((step, index) => {
+                const isStepComplete = (() => {
+                  if (!step.name?.trim()) return false
+                  
+                  switch (step.type) {
+                    case 'ai':
+                      return !!(step.prompt?.trim() && step.model?.model)
+                    case 'command':
+                      return !!(step.command?.trim() && step.timeout_seconds && step.timeout_seconds > 0)
+                    case 'report':
+                      return !!(step.report_config?.channels && step.report_config.channels.length > 0)
+                    default:
+                      return true
+                  }
+                })()
+                
+                return (
+                  <div key={step.id} className={`flex items-center gap-3 p-3 rounded-lg ${
+                    isStepComplete ? 'bg-slate-800/30' : 'bg-red-900/20 border border-red-800/30'
                   }`}>
-                    {step.type}
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-cyber-bg font-bold ${
+                      isStepComplete ? 'bg-cyber-neonGreen' : 'bg-cyber-neonYellow'
+                    }`}>
+                      {isStepComplete ? '✓' : index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-gray-200 font-medium">{step.name}</p>
+                      <p className="text-xs text-gray-400">
+                        {step.type === 'ai' ? '🤖 AI Step' : 
+                         step.type === 'command' ? '💻 Command' : '📧 Report'}
+                        {!isStepComplete && <span className="text-cyber-neonYellow ml-2">• Needs attention</span>}
+                      </p>
+                    </div>
+                    <div className={`px-2 py-1 rounded text-xs ${
+                      step.type === 'ai' ? 'bg-blue-900 text-blue-400' :
+                      step.type === 'command' ? 'bg-green-900 text-green-400' :
+                      'bg-purple-900 text-purple-400'
+                    }`}>
+                      {step.type}
+                    </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             ) : (
               <div className="text-center py-8 text-gray-400">
                 <p>No steps configured yet</p>
@@ -422,6 +573,43 @@ export default function CreateWorkflowPage({ workflowId, onBack, onSave }: Props
               </div>
             )}
           </div>
+          
+          {/* Validation Summary */}
+          {workflow.steps && workflow.steps.length > 0 && (
+            <div className="mt-4 p-3 bg-slate-800/30 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-300 mb-2">Validation Summary</h4>
+              {(() => {
+                const incompleteSteps = workflow.steps.filter(step => {
+                  if (!step.name?.trim()) return true
+                  
+                  switch (step.type) {
+                    case 'ai':
+                      return !(step.prompt?.trim() && step.model?.model)
+                    case 'command':
+                      return !(step.command?.trim() && step.timeout_seconds && step.timeout_seconds > 0)
+                    case 'report':
+                      return !(step.report_config?.channels && step.report_config.channels.length > 0)
+                    default:
+                      return false
+                  }
+                })
+                
+                if (incompleteSteps.length === 0) {
+                  return (
+                    <div className="text-sm text-cyber-neonGreen">
+                      ✅ All steps are properly configured and ready to save!
+                    </div>
+                  )
+                } else {
+                  return (
+                    <div className="text-sm text-cyber-neonYellow">
+                      ⚠️ {incompleteSteps.length} step(s) need attention before saving
+                    </div>
+                  )
+                }
+              })()}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -443,13 +631,15 @@ export default function CreateWorkflowPage({ workflowId, onBack, onSave }: Props
     
     if (currentStep === 1 && selectedTemplate) {
       // Auto-populate steps from template
-      setWorkflow({
-        ...workflow,
+      setWorkflow(prev => ({
+        ...prev,
         steps: selectedTemplate.steps.map(step => ({
           ...step,
           id: `${step.id}-${Date.now()}`
-        }))
-      })
+        })),
+        // Also populate input variables from template if they exist
+        inputs: selectedTemplate.inputs || {}
+      }))
     }
     
     setCurrentStep(currentStep + 1)
@@ -462,14 +652,65 @@ export default function CreateWorkflowPage({ workflowId, onBack, onSave }: Props
       return
     }
 
+    // Validate workflow steps
+    if (!workflow.steps || workflow.steps.length === 0) {
+      setError('At least one workflow step is required')
+      return
+    }
+
+    // Validate each step has required fields
+    const validationErrors: string[] = []
+    workflow.steps.forEach((step, index) => {
+      if (!step.name?.trim()) {
+        validationErrors.push(`Step ${index + 1}: Name is required`)
+      }
+      
+      if (step.type === 'ai') {
+        if (!step.prompt?.trim()) {
+          validationErrors.push(`Step ${index + 1} (AI): Prompt is required`)
+        }
+        if (!step.model?.model) {
+          validationErrors.push(`Step ${index + 1} (AI): Model selection is required`)
+        }
+      }
+      
+      if (step.type === 'command') {
+        if (!step.command?.trim()) {
+          validationErrors.push(`Step ${index + 1} (Command): Command is required`)
+        }
+        if (!step.timeout_seconds || step.timeout_seconds < 1) {
+          validationErrors.push(`Step ${index + 1} (Command): Valid timeout is required`)
+        }
+      }
+      
+      if (step.type === 'report') {
+        if (!step.report_config?.channels || step.report_config.channels.length === 0) {
+          validationErrors.push(`Step ${index + 1} (Report): At least one report channel is required`)
+        }
+      }
+    })
+
+    if (validationErrors.length > 0) {
+      setError(`Please fix the following issues:\n${validationErrors.join('\n')}`)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
     try {
       const workflowData: Omit<Workflow, 'id' | 'created_at' | 'updated_at'> = {
-        name: workflow.name,
-        description: workflow.description || '',
-        steps: workflow.steps || []
+        name: workflow.name.trim(),
+        description: workflow.description?.trim() || '',
+        inputs: workflow.inputs || {},
+        steps: workflow.steps.map(step => ({
+          ...step,
+          name: step.name.trim(),
+          description: step.description?.trim() || '',
+          ...(step.type === 'ai' && { prompt: step.prompt?.trim() }),
+          ...(step.type === 'command' && { command: step.command?.trim() }),
+          ...(step.type === 'report' && { report_config: step.report_config })
+        }))
       }
 
       if (workflowId) {
@@ -636,7 +877,7 @@ export default function CreateWorkflowPage({ workflowId, onBack, onSave }: Props
 // Enhanced Workflow Form Component
 interface WorkflowFormProps {
   workflow: Partial<Workflow>
-  onChange: (workflow: Partial<Workflow>) => void
+  onChange: (workflow: Partial<Workflow> | ((prev: Partial<Workflow>) => Partial<Workflow>)) => void
   template?: typeof WORKFLOW_TEMPLATES[0] | null
 }
 
@@ -651,18 +892,26 @@ function WorkflowForm({ workflow, onChange, template }: WorkflowFormProps) {
       description: '',
       inputs: {},
       ...(type === 'ai' && {
-        prompt: '',
+        prompt: 'Enter your AI prompt here...',
         model: { provider: 'openai', model: 'gpt-4o-mini' }
       }),
       ...(type === 'command' && {
-        command: '',
-        timeout_seconds: 60
+        command: 'echo "Hello World"',
+        timeout_seconds: 60,
+        working_dir: '/tmp'
+      }),
+      ...(type === 'report' && {
+        report_config: {
+          channels: [],
+          template: 'Default security report template'
+        }
       })
     }
 
+    const newSteps = [...(workflow.steps || []), newStep]
     onChange({
       ...workflow,
-      steps: [...(workflow.steps || []), newStep]
+      steps: newSteps
     })
     setActiveStep(newStep.id)
   }
@@ -709,17 +958,36 @@ function WorkflowForm({ workflow, onChange, template }: WorkflowFormProps) {
       {/* Steps List */}
       <div className="space-y-4">
         {workflow.steps && workflow.steps.length > 0 ? (
-          workflow.steps.map((step, index) => (
-            <StepEditor
-              key={step.id}
-              step={step}
-              index={index}
-              isActive={activeStep === step.id}
-              onToggle={() => setActiveStep(activeStep === step.id ? null : step.id)}
-              onUpdate={(updates) => updateStep(step.id, updates)}
-              onRemove={() => removeStep(step.id)}
-            />
-          ))
+          workflow.steps.map((step, index) => {
+            // Check if step is complete
+            const isStepComplete = (() => {
+              if (!step.name?.trim()) return false
+              
+              switch (step.type) {
+                case 'ai':
+                  return !!(step.prompt?.trim() && step.model?.model)
+                case 'command':
+                  return !!(step.command?.trim() && step.timeout_seconds && step.timeout_seconds > 0)
+                case 'report':
+                  return !!(step.report_config?.channels && step.report_config.channels.length > 0)
+                default:
+                  return true
+              }
+            })()
+            
+            return (
+              <StepEditor
+                key={step.id}
+                step={step}
+                index={index}
+                isActive={activeStep === step.id}
+                isComplete={isStepComplete}
+                onToggle={() => setActiveStep(activeStep === step.id ? null : step.id)}
+                onUpdate={(updates) => updateStep(step.id, updates)}
+                onRemove={() => removeStep(step.id)}
+              />
+            )
+          })
         ) : (
           <div className="text-center py-12 border border-slate-800 rounded-lg bg-cyber-panel/20">
             <div className="text-4xl mb-4 opacity-50">⚙️</div>
@@ -727,13 +995,13 @@ function WorkflowForm({ workflow, onChange, template }: WorkflowFormProps) {
             <p className="text-gray-400 mb-4">Add your first step to start building your workflow</p>
             {template && template.steps.length > 0 && (
               <button
-                onClick={() => onChange({
-                  ...workflow,
+                onClick={() => onChange((prev: Partial<Workflow>) => ({
+                  ...prev,
                   steps: template.steps.map(step => ({
                     ...step,
                     id: `${step.id}-${Date.now()}`
                   }))
-                })}
+                }))}
                 className="px-4 py-2 border border-cyber-neonYellow/30 bg-cyber-neonYellow/10 text-cyber-neonYellow rounded-lg hover:bg-cyber-neonYellow/20 transition-colors"
               >
                 ✨ Use Template Steps ({template.steps.length})
@@ -759,12 +1027,13 @@ interface StepEditorProps {
   step: PentestStep
   index: number
   isActive: boolean
+  isComplete: boolean
   onToggle: () => void
   onUpdate: (updates: Partial<PentestStep>) => void
   onRemove: () => void
 }
 
-function StepEditor({ step, index, isActive, onToggle, onUpdate, onRemove }: StepEditorProps) {
+function StepEditor({ step, index, isActive, isComplete, onToggle, onUpdate, onRemove }: StepEditorProps) {
   const getStepIcon = (type: string) => {
     switch (type) {
       case 'ai': return '🤖'
@@ -794,14 +1063,18 @@ function StepEditor({ step, index, isActive, onToggle, onUpdate, onRemove }: Ste
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-8 h-8 bg-cyber-neonCyan rounded-full flex items-center justify-center text-cyber-bg font-bold text-sm">
-              {index + 1}
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-cyber-bg font-bold text-sm ${
+              isComplete ? 'bg-cyber-neonGreen' : 'bg-cyber-neonYellow'
+            }`}>
+              {isComplete ? '✓' : index + 1}
             </div>
             <div className="flex items-center gap-3">
               <span className="text-xl">{getStepIcon(step.type)}</span>
               <div>
                 <h4 className="font-medium text-gray-200">{step.name}</h4>
-                <p className="text-sm text-gray-400">{step.type} step</p>
+                <p className="text-sm text-gray-400">
+                  {step.type} step {!isComplete && <span className="text-cyber-neonYellow">• Incomplete</span>}
+                </p>
               </div>
             </div>
           </div>
@@ -830,13 +1103,23 @@ function StepEditor({ step, index, isActive, onToggle, onUpdate, onRemove }: Ste
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Step Name</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Step Name <span className="text-red-400">*</span>
+              </label>
               <input
                 type="text"
                 value={step.name}
                 onChange={(e) => onUpdate({ name: e.target.value })}
-                className="w-full px-3 py-2 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 focus:border-cyber-neonCyan focus:outline-none"
+                className={`w-full px-3 py-2 bg-cyber-panel/60 border rounded-lg text-gray-100 focus:outline-none ${
+                  !step.name?.trim() 
+                    ? 'border-red-500 focus:border-red-400' 
+                    : 'border-slate-700 focus:border-cyber-neonCyan'
+                }`}
+                placeholder="e.g., Port Scan, AI Analysis, Generate Report"
               />
+              {!step.name?.trim() && (
+                <p className="text-xs text-red-400 mt-1">Step name is required</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
@@ -844,7 +1127,7 @@ function StepEditor({ step, index, isActive, onToggle, onUpdate, onRemove }: Ste
                 type="text"
                 value={step.description || ''}
                 onChange={(e) => onUpdate({ description: e.target.value })}
-                placeholder="Optional description"
+                placeholder="Optional description of what this step does"
                 className="w-full px-3 py-2 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 focus:border-cyber-neonGreen focus:outline-none"
               />
             </div>
@@ -854,18 +1137,29 @@ function StepEditor({ step, index, isActive, onToggle, onUpdate, onRemove }: Ste
           {step.type === 'ai' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">AI Prompt</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  AI Prompt <span className="text-red-400">*</span>
+                </label>
                 <textarea
                   value={step.prompt || ''}
                   onChange={(e) => onUpdate({ prompt: e.target.value })}
                   placeholder="Enter the prompt for the AI model..."
                   rows={4}
-                  className="w-full px-3 py-2 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 focus:border-cyber-neonCyan focus:outline-none resize-none"
+                  className={`w-full px-3 py-2 bg-cyber-panel/60 border rounded-lg text-gray-100 resize-none ${
+                    !step.prompt?.trim() 
+                      ? 'border-red-500 focus:border-red-400' 
+                      : 'border-slate-700 focus:border-cyber-neonCyan'
+                  } focus:outline-none`}
                 />
+                {!step.prompt?.trim() && (
+                  <p className="text-xs text-red-400 mt-1">AI prompt is required</p>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Model Provider</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Model Provider <span className="text-red-400">*</span>
+                  </label>
                   <select
                     value={step.model?.provider || 'openai'}
                     onChange={(e) => onUpdate({ 
@@ -880,7 +1174,9 @@ function StepEditor({ step, index, isActive, onToggle, onUpdate, onRemove }: Ste
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Model</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Model <span className="text-red-400">*</span>
+                  </label>
                   <select
                     value={step.model?.model || 'gpt-4o-mini'}
                     onChange={(e) => onUpdate({ 
@@ -903,29 +1199,49 @@ function StepEditor({ step, index, isActive, onToggle, onUpdate, onRemove }: Ste
           {step.type === 'command' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Command</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Command <span className="text-red-400">*</span>
+                </label>
                 <textarea
                   value={step.command || ''}
                   onChange={(e) => onUpdate({ command: e.target.value })}
                   placeholder="Enter the command to execute..."
                   rows={3}
-                  className="w-full px-3 py-2 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 font-mono text-sm focus:border-cyber-neonGreen focus:outline-none resize-none"
+                  className={`w-full px-3 py-2 bg-cyber-panel/60 border rounded-lg text-gray-100 font-mono text-sm resize-none ${
+                    !step.command?.trim() 
+                      ? 'border-red-500 focus:border-red-400' 
+                      : 'border-slate-700 focus:border-cyber-neonGreen'
+                  } focus:outline-none`}
                 />
+                {!step.command?.trim() && (
+                  <p className="text-xs text-red-400 mt-1">Command is required</p>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Timeout (seconds)</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Timeout (seconds) <span className="text-red-400">*</span>
+                  </label>
                   <input
                     type="number"
                     value={step.timeout_seconds || 60}
                     onChange={(e) => onUpdate({ timeout_seconds: parseInt(e.target.value) || 60 })}
                     min="1"
                     max="3600"
-                    className="w-full px-3 py-2 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 focus:border-cyber-neonGreen focus:outline-none"
+                    className={`w-full px-3 py-2 bg-cyber-panel/60 border rounded-lg text-gray-100 focus:outline-none ${
+                      !step.timeout_seconds || step.timeout_seconds < 1
+                        ? 'border-red-500 focus:border-red-400' 
+                        : 'border-slate-700 focus:border-cyber-neonGreen'
+                    }`}
                   />
+                  {(!step.timeout_seconds || step.timeout_seconds < 1) && (
+                    <p className="text-xs text-red-400 mt-1">Valid timeout is required</p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Working Directory</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Working Directory
+                  </label>
                   <input
                     type="text"
                     value={step.working_dir || ''}
@@ -933,6 +1249,24 @@ function StepEditor({ step, index, isActive, onToggle, onUpdate, onRemove }: Ste
                     placeholder="/tmp"
                     className="w-full px-3 py-2 bg-cyber-panel/60 border border-slate-700 rounded-lg text-gray-100 focus:border-cyber-neonGreen focus:outline-none"
                   />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step.type === 'report' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Report Channels <span className="text-red-400">*</span>
+                </label>
+                <div className="p-3 bg-slate-800/30 border border-slate-700 rounded-lg">
+                  <p className="text-sm text-gray-400 mb-2">
+                    Report channels configuration will be added in a future update.
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    For now, this step type is not fully implemented.
+                  </p>
                 </div>
               </div>
             </div>

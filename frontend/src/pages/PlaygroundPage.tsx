@@ -232,7 +232,7 @@ export default function PlaygroundPage() {
           )}
         </div>
 
-        {/* Terminal/Details Panel */}
+        {/* File Manager Panel */}
         <div className="xl:col-span-2">
           {selectedInstance ? (
             <PlaygroundFileManager

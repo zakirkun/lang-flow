@@ -4,6 +4,7 @@ import WorkflowViewer from '../components/WorkflowViewer'
 import RunView from '../components/RunView'
 import Dashboard from '../components/Dashboard'
 import RunHistoryModal from '../components/RunHistoryModal'
+import PlaygroundSelector from '../components/PlaygroundSelector'
 import { startRun, getWorkflow } from '../api'
 
 export default function ScanPage({ workflowId }: { workflowId?: string }) {
@@ -25,6 +26,7 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
   const [completedSteps, setCompletedSteps] = useState<string[]>([])
   const [logs, setLogs] = useState<StepLog[]>([])
   const [workflowLoaded, setWorkflowLoaded] = useState(false)
+  const [selectedPlaygroundId, setSelectedPlaygroundId] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     if (!workflowId) return
@@ -87,7 +89,7 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
       setCompletedSteps([])
       setLogs([])
       
-      const res = await startRun(wf.id)
+      const res = await startRun(wf.id, selectedPlaygroundId)
       setRunId(res.run_id)
     } catch (e: any) {
       alert(`Failed to start scan: ${e.message}`)
@@ -111,10 +113,13 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-cyber-neonCyan border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <div className="text-cyber-neonCyan">Loading workflow...</div>
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 p-4 border border-slate-800 rounded-lg bg-cyber-panel/20">
+          <span className="text-2xl animate-spin">⚡</span>
+          <div>
+            <h2 className="text-xl font-semibold text-cyber-neonCyan">Loading Workflow</h2>
+            <p className="text-sm text-gray-400">Please wait...</p>
+          </div>
         </div>
       </div>
     )
@@ -122,34 +127,13 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
 
   if (error) {
     return (
-      <div className="max-w-2xl mx-auto py-16">
-        <div className="border border-red-800 bg-red-900/20 rounded-lg p-6 text-center">
-          <div className="text-cyber-neonPink text-lg font-medium mb-2">Failed to Load Workflow</div>
-          <div className="text-gray-300">{error}</div>
-          <button 
-            className="mt-4 px-4 py-2 rounded border border-slate-700 bg-cyber-panel/60 text-gray-200 hover:text-white hover:shadow-neonCyan"
-            onClick={() => window.location.reload()}
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  // Fix: Show message when no workflow is selected
-  if (!workflowId) {
-    return (
-      <div className="max-w-2xl mx-auto py-16">
-        <div className="border border-slate-800 bg-cyber-panel/20 rounded-lg p-8 text-center">
-          <div className="text-4xl mb-4 opacity-50">🔍</div>
-          <h3 className="text-xl font-medium text-gray-300 mb-2">No Workflow Selected</h3>
-          <p className="text-gray-400 mb-4">
-            Please select a workflow from the Workflows tab to start scanning
-          </p>
-          <p className="text-sm text-gray-500">
-            Navigate to Workflows → Click "Run" on any workflow to begin
-          </p>
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 p-4 border border-red-800 rounded-lg bg-red-900/20">
+          <span className="text-2xl">❌</span>
+          <div>
+            <h2 className="text-xl font-semibold text-red-400">Error Loading Workflow</h2>
+            <p className="text-sm text-red-300">{error}</p>
+          </div>
         </div>
       </div>
     )
@@ -158,93 +142,164 @@ export default function ScanPage({ workflowId }: { workflowId?: string }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-slate-800 rounded-lg bg-cyber-panel/20">
         <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full bg-cyber-neonCyan animate-pulse"></div>
-          <h2 className="text-2xl font-bold text-cyber-neonCyan">Security Scan Monitor</h2>
+          <span className="text-2xl">🎯</span>
+          <div>
+            <h2 className="text-xl font-semibold text-cyber-neonCyan">Workflow Execution</h2>
+            <p className="text-sm text-gray-400">
+              {workflowLoaded ? `Executing: ${workflow.name}` : 'Select a workflow to execute'}
+            </p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          {/* <button 
-            className="px-4 py-2 rounded border border-slate-700 bg-cyber-panel/60 text-gray-200 hover:text-white hover:shadow-neonCyan transition-all"
+        
+        <div className="flex items-center gap-2">
+          <button
             onClick={() => setHistoryOpen(true)}
+            className="px-4 py-2 border border-slate-700 bg-cyber-panel/40 text-gray-300 rounded-lg hover:border-slate-600 hover:text-gray-100 transition-all"
           >
-            📊 History
-          </button> */}
-          {!isRunning ? (
-            <button 
-              className="px-4 py-2 rounded border border-green-800 bg-green-900/30 text-cyber-neonGreen hover:shadow-neonGreen transition-all disabled:opacity-50"
-              onClick={handleStart}
-              disabled={workflow.steps.length === 0 || !workflowId || !workflowLoaded}
-            >
-              ▶️ Start Scan
-            </button>
-          ) : (
-            <button 
-              className="px-4 py-2 rounded border border-red-800 bg-red-900/30 text-cyber-neonPink hover:shadow-neonPink transition-all"
-              onClick={handleStop}
-            >
-              ⏹️ Stop Scan
-            </button>
-          )}
+            📊 Run History
+          </button>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left Column - Workflow Viewer */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-6">
-            <h3 className="text-lg font-semibold text-gray-200 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-cyber-neonGreen animate-pulse"></span>
-              Workflow Process
-            </h3>
-            <WorkflowViewer 
-              workflow={workflow} 
-              currentStepId={currentStepId}
-              completedSteps={completedSteps}
-            />
-          </div>
-        </div>
+      {workflowLoaded && (
+        <>
+          {/* Workflow Information */}
+          <div className="bg-cyber-panel border border-slate-800 rounded-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-2xl">⚡</span>
+              <div>
+                <h3 className="text-lg font-semibold text-cyber-neonCyan">{workflow.name}</h3>
+                <p className="text-sm text-gray-400">{workflow.description || 'No description'}</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-cyber-panel/40 border border-slate-700 rounded-lg p-3">
+                <div className="text-sm text-gray-400">Steps</div>
+                <div className="text-lg font-semibold text-cyber-neonGreen">{workflow.steps.length}</div>
+              </div>
+              <div className="bg-cyber-panel/40 border border-slate-700 rounded-lg p-3">
+                <div className="text-sm text-gray-400">Created</div>
+                <div className="text-sm font-medium text-gray-300">
+                  {new Date(workflow.created_at).toLocaleDateString()}
+                </div>
+              </div>
+              <div className="bg-cyber-panel/40 border border-slate-700 rounded-lg p-3">
+                <div className="text-sm text-gray-400">Last Updated</div>
+                <div className="text-sm font-medium text-gray-300">
+                  {new Date(workflow.updated_at).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
 
-        {/* Right Column - Logs and Dashboard */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Live Log Viewer */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-200 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-cyber-neonYellow animate-ping"></span>
-              Real-time Execution Logs
-            </h3>
-            <div className="border border-slate-800 rounded-lg bg-cyber-panel/30 p-4">
-              <RunView 
-                runId={runId} 
-                onLogsUpdate={(newLogs) => setLogs(newLogs)}
+            {/* Playground Selection */}
+            <div className="border-t border-slate-700 pt-4">
+              <PlaygroundSelector
+                selectedInstanceId={selectedPlaygroundId}
+                onInstanceSelect={setSelectedPlaygroundId}
+                disabled={isRunning}
               />
             </div>
           </div>
 
-          {/* Dashboard */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-200 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-cyber-neonPink animate-pulse"></span>
-              Scan Statistics
-            </h3>
-            <div className="border border-slate-800 rounded-lg bg-cyber-panel/30 p-4">
-              <Dashboard workflowId={workflow.id} />
+          {/* Execution Controls */}
+          <div className="bg-cyber-panel border border-slate-800 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-cyber-neonYellow">Execution Control</h3>
+              <div className="flex items-center gap-2">
+                {isRunning && (
+                  <span className="text-sm text-cyber-neonYellow bg-cyber-neonYellow/10 px-3 py-1 rounded-full">
+                    ⚡ Running...
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {!isRunning ? (
+                <button
+                  onClick={handleStart}
+                  disabled={!workflowLoaded || workflow.steps.length === 0}
+                  className="px-6 py-3 bg-cyber-neonGreen text-cyber-bg rounded-lg font-medium hover:shadow-neonGreen transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  🚀 Start Execution
+                </button>
+              ) : (
+                <button
+                  onClick={handleStop}
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all flex items-center gap-2"
+                >
+                  ⏹️ Stop Execution
+                </button>
+              )}
+              
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-gray-400">Environment:</span>
+                {selectedPlaygroundId ? (
+                  <span className="text-cyber-neonCyan bg-cyber-neonCyan/10 px-2 py-1 rounded border border-cyber-neonCyan/30">
+                    🐳 Playground {selectedPlaygroundId.slice(0, 8)}...
+                  </span>
+                ) : (
+                  <span className="text-cyber-neonGreen bg-cyber-neonGreen/10 px-2 py-1 rounded border border-cyber-neonGreen/30">
+                    🖥️ Host System
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+
+          {/* Workflow Steps */}
+          <div className="bg-cyber-panel border border-slate-800 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-cyber-neonCyan mb-4">Workflow Steps</h3>
+            <WorkflowViewer workflow={workflow} />
+          </div>
+
+          {/* Execution Results */}
+          {runId && (
+            <div className="bg-cyber-panel border border-slate-800 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-cyber-neonPink">Real-time Execution Monitor</h3>
+                <div className="flex items-center gap-2 text-sm">
+                  {isRunning && (
+                    <span className="flex items-center gap-2 text-cyber-neonYellow">
+                      <div className="w-2 h-2 bg-cyber-neonYellow rounded-full animate-pulse"></div>
+                      Live Execution
+                    </span>
+                  )}
+                  {selectedPlaygroundId && (
+                    <span className="text-cyber-neonCyan bg-cyber-neonCyan/10 px-2 py-1 rounded border border-cyber-neonCyan/30">
+                      🐳 Playground {selectedPlaygroundId.slice(0, 8)}...
+                    </span>
+                  )}
+                </div>
+              </div>
+              <RunView 
+                runId={runId} 
+                onLogsUpdate={setLogs}
+                onStatusUpdate={(status) => {
+                  if (status === 'success' || status === 'error') {
+                    setIsRunning(false)
+                  } else if (status === 'running') {
+                    setIsRunning(true)
+                  }
+                }}
+              />
+            </div>
+          )}
+        </>
+      )}
 
       {/* Run History Modal */}
-      <RunHistoryModal 
-        open={historyOpen} 
-        onClose={() => setHistoryOpen(false)} 
-        onSelect={(rid) => {
-          setRunId(rid)
-          setIsRunning(false)
-        }}
-        workflowId={workflow.id}
-      />
+      {historyOpen && (
+        <RunHistoryModal
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          onSelect={(runId) => setRunId(runId)}
+          workflowId={workflowId || ''}
+        />
+      )}
     </div>
   )
 } 

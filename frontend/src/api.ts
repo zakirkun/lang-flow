@@ -52,11 +52,14 @@ export async function deleteWorkflow(id: string): Promise<void> {
 export const getWorkflows = listWorkflows
 
 // Runs API
-export async function startRun(workflowId: string): Promise<{ status: string; run_id: string }> {
+export async function startRun(workflowId: string, playgroundInstanceId?: string): Promise<{ status: string; run_id: string }> {
   const response = await fetch(`${API_BASE}/runs/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ workflow_id: workflowId })
+    body: JSON.stringify({ 
+      workflow_id: workflowId,
+      playground_instance_id: playgroundInstanceId 
+    })
   })
   if (!response.ok) throw new Error('Failed to start run')
   return response.json()
@@ -74,9 +77,10 @@ export async function listRuns(): Promise<RunResult[]> {
   return response.json()
 }
 
-export function runsWsUrl(runId: string): string {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  return `${protocol}//${window.location.host}${API_BASE}/runs/ws/${runId}`
+// Server-Sent Events for real-time execution updates
+export function createExecutionStream(runId: string): EventSource {
+  const url = `${API_BASE}/runs/stream/${runId}`
+  return new EventSource(url)
 }
 
 

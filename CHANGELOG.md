@@ -6,7 +6,143 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [2.1.0] - 2024-01-15 🐳 **Virtual Playground Release**
+## [2.1] 🔧 **Input Variables & Enhanced UX Release**
+
+### 🎉 **Major Features Added**
+
+#### 📥 **Input Variables System**
+- **User-Defined Variables**: Create custom input variables like `target_ip`, `domain_name`, `port_range`
+- **Template Integration**: Pre-configured variables in workflow templates for common use cases
+- **Dynamic Substitution**: Use variables in commands, AI prompts, and report templates
+- **Runtime Modification**: Users can modify variable values before workflow execution
+- **Validation System**: Comprehensive form validation with real-time feedback and error indicators
+
+#### 🔧 **Enhanced Form Experience**
+- **Focus Management**: Fixed input focus issues that prevented smooth typing experience
+- **Real-time Validation**: Immediate feedback on form errors with visual indicators
+- **Smart Defaults**: New steps come with sensible defaults instead of empty fields
+- **Step Completion Tracking**: Visual indicators showing which steps are complete vs. incomplete
+- **Form State Optimization**: Functional state updates prevent unnecessary re-renders
+
+#### 📡 **Server-Sent Events (SSE) Implementation**
+- **Real-time Updates**: Replaced WebSockets with SSE for better performance and reliability
+- **Streaming Logs**: Live execution monitoring with real-time log streaming
+- **Connection Health**: Heartbeat monitoring and automatic reconnection
+- **Event Types**: Structured events for step progress, logs, errors, and status updates
+
+### 🔧 **Backend Improvements**
+
+#### 🏗️ **New Services & APIs**
+- **Streaming Service**: SSE-based real-time communication system
+- **Enhanced Workflow Engine**: Support for input variables and dynamic templating
+- **Improved Command Executor**: Better playground integration and error handling
+- **Event Loop Management**: Proper async handling in multi-threaded environments
+
+#### 📊 **Data Models**
+- **Workflow Inputs**: Added `inputs` property to Workflow model for variable storage
+- **StreamEvent**: New model for SSE-based real-time communication
+- **Enhanced Validation**: Better input validation and sanitization
+
+#### 🛡️ **Security & Stability**
+- **Input Sanitization**: Variables are validated and sanitized before execution
+- **Error Recovery**: Comprehensive error handling in workflow execution
+- **Resource Management**: Better cleanup of execution resources
+
+### 🎨 **Frontend Enhancements**
+
+#### 🖼️ **New UI Components**
+- **Enhanced CreateWorkflowPage**: Improved workflow creation with input variables
+- **Input Variables Section**: Dedicated UI for managing workflow variables
+- **Step Validation Indicators**: Visual feedback for step completion status
+- **Form Guidance**: Helpful tips and examples for workflow building
+
+#### 🎯 **UX Improvements**
+- **Form Focus Management**: Input fields maintain focus during typing
+- **Real-time Validation**: Immediate feedback on form errors
+- **Visual Step Status**: Clear indicators for complete vs. incomplete steps
+- **Template Integration**: Auto-populate both steps and input variables from templates
+- **Better Error Messages**: Clear, actionable error messages with step-specific details
+
+#### 🔄 **State Management**
+- **Functional Updates**: Use of functional state updates to prevent focus loss
+- **Optimized Re-renders**: Reduced unnecessary component re-renders
+- **Better Form Handling**: Improved input change handling and validation
+
+### 📊 **Workflow Templates**
+
+#### 🎯 **Enhanced Templates**
+- **Basic Reconnaissance**: `target_domain` variable for subdomain discovery
+- **Web Application Testing**: `target_ip` and `target_url` variables for scanning
+- **Network Assessment**: `network_range` and `target_hosts` variables for enumeration
+- **Custom Workflow**: Blank template for building from scratch
+
+#### 🔧 **Template Features**
+- **Pre-configured Variables**: Templates include realistic default values
+- **Step Examples**: Real-world security testing workflow examples
+- **Variable Integration**: Seamless integration of variables in all step types
+
+### 🐛 **Bug Fixes**
+
+#### 🔧 **Form Input Issues**
+- **Fixed Input Focus Loss**: Resolved issue where inputs lost focus after typing one character
+- **State Update Optimization**: Fixed unnecessary re-renders causing form instability
+- **Validation Errors**: Proper error display and form state management
+
+#### 🏗️ **Backend Fixes**
+- **Event Loop Conflicts**: Resolved async/await issues in worker threads
+- **Streaming Events**: Fixed broken callback mechanism in real-time updates
+- **Workflow Execution**: Ensured run data is properly saved in all scenarios
+- **Error Handling**: Better error propagation and user feedback
+
+#### 🎨 **Frontend Fixes**
+- **TypeScript Errors**: Resolved all compilation errors and type mismatches
+- **Component Props**: Fixed prop type mismatches and interface definitions
+- **State Management**: Improved form state handling and validation
+- **UI Responsiveness**: Fixed layout issues and improved user experience
+
+### 📈 **Performance Optimizations**
+
+#### ⚡ **System Performance**
+- **SSE Implementation**: More efficient real-time communication than WebSockets
+- **Form Rendering**: Optimized form updates and reduced re-renders
+- **State Management**: Better React state update patterns
+
+#### 🔄 **User Experience**
+- **Form Responsiveness**: Smooth typing experience without focus loss
+- **Real-time Updates**: Faster and more reliable execution monitoring
+- **Template Loading**: Quick template selection and variable population
+- **Validation Feedback**: Immediate feedback on form errors
+
+### 🛠️ **Development & Maintenance**
+
+#### 📝 **Documentation**
+- **Updated README**: Comprehensive documentation for input variables and enhanced UX
+- **API Documentation**: SSE endpoint documentation and event types
+- **Usage Examples**: Step-by-step guide for creating dynamic workflows
+- **Troubleshooting**: Added section for common form and input issues
+
+#### 🧪 **Testing & Quality**
+- **Form Validation**: Comprehensive testing of input validation system
+- **State Management**: Testing of form state updates and focus management
+- **Template Integration**: Testing of template variable population
+- **Error Handling**: Testing of error scenarios and user feedback
+
+### 🔄 **Migration Notes**
+
+#### **From v2.1.0 to v2.2.0**
+- **WebSocket to SSE**: Real-time updates now use Server-Sent Events
+- **Input Variables**: New workflow creation flow includes variable configuration
+- **Form Improvements**: Enhanced form experience with better validation
+- **Template Updates**: Templates now include pre-configured input variables
+
+#### **Breaking Changes**
+- **Real-time Updates**: Frontend now expects SSE instead of WebSocket connections
+- **Workflow Model**: Workflows now include `inputs` property for variables
+- **API Endpoints**: New SSE endpoints for real-time execution monitoring
+
+---
+
+## [2.0] 🐳 **Virtual Playground Release**
 
 ### 🎉 **Major Features Added**
 
@@ -138,7 +274,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [2.0.0] - 2024-01-10 🎨 **Major UI/UX Overhaul**
+## [1.5] 🎨 **Major UI/UX Overhaul**
 
 ### 🎉 **Major Features**
 - **Cyberpunk Theme**: Complete visual redesign with neon colors and dark aesthetics
@@ -161,7 +297,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [1.0.0] - 2024-01-01 🚀 **Initial Release**
+## [1.0] 🚀 **Initial Release**
 
 ### 🎉 **Core Features**
 - **Workflow Engine**: Basic workflow execution with command and AI steps
@@ -193,22 +329,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - 🛡️ **Security**: Security enhancements and vulnerability fixes
 - 📊 **Analytics**: Monitoring, metrics, and reporting features
 - 🐛 **Bugfix**: Bug fixes and stability improvements
-
----
-
-## 🔮 **Upcoming Features** (Roadmap)
-
-### 🎯 **Next Release (2.2.0)**
-- **Workflow Templates**: Pre-built security testing workflows
-- **Plugin System**: Extensible architecture for custom tools
-- **Team Collaboration**: Multi-user support and role-based access
-- **Cloud Deployment**: Docker Compose and Kubernetes support
-
-### 🚀 **Future Releases**
-- **Advanced Analytics**: Machine learning-powered insights
-- **Integration Hub**: Third-party tool integrations (Burp Suite, Metasploit)
-- **Mobile App**: Native mobile application for monitoring
-- **Enterprise Features**: SSO, LDAP, and enterprise security
 
 ---
 

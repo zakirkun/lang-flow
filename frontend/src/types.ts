@@ -83,6 +83,7 @@ export interface Workflow {
   name: string
   description?: string
   steps: PentestStep[]
+  inputs?: Record<string, any>
   created_at: string
   updated_at: string
   graph?: WorkflowGraph
@@ -97,6 +98,7 @@ export interface StepLog {
   finished_at?: string
   output?: string
   error?: string
+  received_at?: string
 }
 
 export interface RunResult {
@@ -113,15 +115,10 @@ export interface RunResult {
 export interface PlaygroundInstance {
   id: string
   name: string
-  container_id: string
-  ssh_port: number
-  docker_port: number
-  web_port: number
   status: 'creating' | 'running' | 'stopped' | 'error' | 'expired' | 'installing'
   created_at: string
   expires_at: string
   last_activity: string
-  terminal_sessions: Record<string, any>
   environment: Record<string, string>
   resource_limits: Record<string, any>
 }
@@ -141,12 +138,4 @@ export interface PlaygroundCommand {
   command: string
   working_dir?: string
   environment?: Record<string, string>
-}
-
-export interface PlaygroundTerminalSession {
-  session_id: string
-  instance_id: string
-  created_at: string
-  last_activity: string
-  status: 'active' | 'inactive' | 'closed'
 }
